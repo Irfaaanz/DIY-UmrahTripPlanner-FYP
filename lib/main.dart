@@ -123,6 +123,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'screens/main_navigation.dart';
 
 void main() {
   runApp(const UmrahPlannerApp());
@@ -155,73 +156,8 @@ class UmrahPlannerApp extends StatelessWidget {
         textTheme: GoogleFonts.poppinsTextTheme(),
         useMaterial3: true,
       ),
-      home: const MyHomePage(),
+      home: const MainNavigation(),
       debugShowCheckedModeBanner: false,
-    );
-  }
-}
-
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Umrah Trip Planner', style: GoogleFonts.poppins()),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.mosque, size: 100, color: const Color(0xFF036B52)),
-            const SizedBox(height: 20),
-            Text(
-              'Welcome to Your Umrah Planner',
-              style: GoogleFonts.poppins(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF036B52),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40),
-              child: Text(
-                'DIY Umrah Trip Planner with PSO Optimization',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  color: Colors.grey[700],
-                ),
-              ),
-            ),
-            const SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: () {
-                // Will navigate to input screen later
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF036B52),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 30,
-                  vertical: 15,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: Text(
-                'Start Planning',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
