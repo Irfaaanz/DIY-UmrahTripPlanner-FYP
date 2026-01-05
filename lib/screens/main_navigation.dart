@@ -6,14 +6,22 @@ import 'saved_screen.dart';
 import 'profile_screen.dart';
 
 class MainNavigation extends StatefulWidget {
-  const MainNavigation({super.key});
+  final int? initialIndex;
+  
+  const MainNavigation({super.key, this.initialIndex});
 
   @override
   State<MainNavigation> createState() => _MainNavigationState();
 }
 
 class _MainNavigationState extends State<MainNavigation> {
-  int _currentIndex = 0;
+  late int _currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex ?? 0;
+  }
 
   void _changeTab(int index) {
     setState(() {

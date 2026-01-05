@@ -23,9 +23,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         centerTitle: true,
         title: Text(
           'Profile',
-          style: GoogleFonts.poppins(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
+          style: GoogleFonts.montserrat(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
             color: Colors.black,
           ),
         ),

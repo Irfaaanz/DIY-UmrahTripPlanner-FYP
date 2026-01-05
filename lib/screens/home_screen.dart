@@ -14,9 +14,9 @@ class HomeScreen extends StatelessWidget {
         centerTitle: true,
         title: Text(
           'Umrah Trip Planner',
-          style: GoogleFonts.poppins(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
+          style: GoogleFonts.montserrat(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
             color: Colors.black,
           ),
         ),

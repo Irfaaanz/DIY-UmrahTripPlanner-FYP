@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'personalisation_confirmation_screen.dart';
 
 class DurationInputScreen extends StatefulWidget {
   final int age;
@@ -50,8 +51,8 @@ class _DurationInputScreenState extends State<DurationInputScreen> {
         title: Text(
           'Personalise My Trips',
           style: GoogleFonts.montserrat(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
             color: Colors.black,
           ),
         ),
@@ -208,19 +209,16 @@ class _DurationInputScreenState extends State<DurationInputScreen> {
                   child: ElevatedButton(
                     onPressed: _duration != null && _duration! > 0 && _duration! <= 14
                         ? () {
-                            // Here you can navigate to the next screen or save the data
-                            // For now, we'll just show a success message and go back
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Trip personalized! Age: ${widget.age}, Budget: RM ${widget.budget.toStringAsFixed(2)}, Duration: $_duration days',
-                                  style: GoogleFonts.poppins(),
+                            // Navigate to confirmation screen with trip data
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => PersonalisationConfirmationScreen(
+                                  age: widget.age,
+                                  budget: widget.budget,
+                                  duration: _duration!,
                                 ),
-                                backgroundColor: Colors.green,
                               ),
                             );
-                            // Navigate back to home or next screen
-                            Navigator.of(context).popUntil((route) => route.isFirst);
                           }
                         : null,
                     style: ElevatedButton.styleFrom(

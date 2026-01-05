@@ -43,8 +43,8 @@ class _AgeInputScreenState extends State<AgeInputScreen> {
         title: Text(
           'Personalise My Trips',
           style: GoogleFonts.montserrat(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
             color: Colors.black,
           ),
         ),
