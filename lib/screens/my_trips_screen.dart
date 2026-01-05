@@ -1,17 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'age_input_screen.dart';
+import '../services/auth_service.dart';
 
-class MyTripsScreen extends StatelessWidget {
+class MyTripsScreen extends StatefulWidget {
   final VoidCallback? onNavigateToHome;
   
   const MyTripsScreen({super.key, this.onNavigateToHome});
 
   @override
-  Widget build(BuildContext context) {
-    // Get user name - you can make this dynamic later
-    const String userName = "'Irfan";
+  State<MyTripsScreen> createState() => _MyTripsScreenState();
+}
 
+class _MyTripsScreenState extends State<MyTripsScreen> {
+  String _userName = 'User';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserName();
+  }
+
+  Future<void> _loadUserName() async {
+    final displayName = await AuthService.getDisplayName();
+    if (mounted) {
+      setState(() {
+        _userName = displayName ?? 'User';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -27,8 +47,8 @@ class MyTripsScreen extends StatelessWidget {
             ),
             onPressed: () {
               // Navigate back to homepage
-              if (onNavigateToHome != null) {
-                onNavigateToHome!();
+              if (widget.onNavigateToHome != null) {
+                widget.onNavigateToHome!();
               } else {
                 Navigator.of(context).pop();
               }
@@ -54,7 +74,7 @@ class MyTripsScreen extends StatelessWidget {
               const SizedBox(height: 20),
               // Welcome message
               Text(
-                "Welcome Onboards, $userName!",
+                "Welcome Onboards, $_userName!",
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
@@ -105,8 +125,8 @@ class MyTripsScreen extends StatelessWidget {
                   child: TextButton(
                     onPressed: () {
                       // Navigate back to homepage
-                      if (onNavigateToHome != null) {
-                        onNavigateToHome!();
+                      if (widget.onNavigateToHome != null) {
+                        widget.onNavigateToHome!();
                       } else {
                         Navigator.of(context).pop();
                       }
