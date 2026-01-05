@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'age_input_screen.dart';
 
 class MyTripsScreen extends StatelessWidget {
   final VoidCallback? onNavigateToHome;
@@ -77,8 +78,11 @@ class MyTripsScreen extends StatelessWidget {
                 title: "Are you travelling by own?",
                 description: "Personalised all your budgets and planning by yourself.",
                 onTap: () {
-                  // Handle navigation to own trip planning
-                  // You can add navigation logic here
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const AgeInputScreen(),
+                    ),
+                  );
                 },
               ),
               const SizedBox(height: 16),
