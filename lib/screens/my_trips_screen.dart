@@ -76,7 +76,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
               Text(
                 "Welcome Onboards, $_userName!",
                 style: GoogleFonts.poppins(
-                  fontSize: 14,
+                  fontSize: 16,
                   fontWeight: FontWeight.w400,
                   color: Colors.black87,
                 ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'personalisation_confirmation_screen.dart';
+import 'hotel_preferences_screen.dart';
 
 class DurationInputScreen extends StatefulWidget {
   final int age;
@@ -65,7 +65,7 @@ class _DurationInputScreenState extends State<DurationInputScreen> {
             children: [
               const SizedBox(height: 16),
               // Progress bar
-              _buildProgressBar(3, 3),
+              _buildProgressBar(3, 7),
               const SizedBox(height: 32),
               // Main heading - full width
               Text(
@@ -209,10 +209,10 @@ class _DurationInputScreenState extends State<DurationInputScreen> {
                   child: ElevatedButton(
                     onPressed: _duration != null && _duration! > 0 && _duration! <= 14
                         ? () {
-                            // Navigate to confirmation screen with trip data
+                            // Navigate to hotel preferences screen
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (context) => PersonalisationConfirmationScreen(
+                                builder: (context) => HotelPreferencesScreen(
                                   age: widget.age,
                                   budget: widget.budget,
                                   duration: _duration!,
