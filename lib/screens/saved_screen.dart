@@ -54,26 +54,42 @@ class _SavedScreenState extends State<SavedScreen> {
 
   Future<void> _deleteTrip(int index) async {
     try {
+      // Get the trip to delete from the sorted list using the index
+      if (index < 0 || index >= _savedTrips.length) {
+        return;
+      }
+      
+      final tripToDelete = _savedTrips[index];
+      final tripToDeleteCreatedAt = tripToDelete['createdAt'] as String;
+      
+      // Find and remove the trip from the unsorted list in SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       final savedTrips = prefs.getStringList('saved_trips') ?? [];
       
-      if (index < savedTrips.length) {
-        savedTrips.removeAt(index);
-        await prefs.setStringList('saved_trips', savedTrips);
-        await _loadSavedTrips();
-        
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Trip deleted',
-                style: GoogleFonts.poppins(),
-              ),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 2),
-            ),
-          );
+      // Find the trip by matching createdAt timestamp
+      savedTrips.removeWhere((tripJson) {
+        try {
+          final trip = jsonDecode(tripJson) as Map<String, dynamic>;
+          return trip['createdAt'] == tripToDeleteCreatedAt;
+        } catch (e) {
+          return false;
         }
+      });
+      
+      await prefs.setStringList('saved_trips', savedTrips);
+      await _loadSavedTrips();
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Trip deleted',
+              style: GoogleFonts.poppins(),
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {

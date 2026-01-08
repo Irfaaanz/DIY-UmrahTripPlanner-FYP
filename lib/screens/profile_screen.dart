@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import 'sign_in_screen.dart';
+import 'profile_details_screen.dart';
+import 'faq_screen.dart';
+import 'contact_us_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -36,6 +39,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        automaticallyImplyLeading: false,
         centerTitle: true,
         title: Text(
           'Profile',
@@ -158,32 +162,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
         icon: Icons.person_outline,
         title: 'Profile details',
         onTap: () {
-          // Navigate to profile details screen
-          _showComingSoon(context, 'Profile details');
-        },
-      ),
-      _MenuItemData(
-        icon: Icons.edit_outlined,
-        title: 'Edit profile',
-        onTap: () {
-          // Navigate to edit profile screen
-          _showComingSoon(context, 'Edit profile');
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const ProfileDetailsScreen(),
+            ),
+          );
         },
       ),
       _MenuItemData(
         icon: Icons.help_outline,
         title: 'FAQ',
         onTap: () {
-          // Navigate to FAQ screen
-          _showComingSoon(context, 'FAQ');
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const FAQScreen(),
+            ),
+          );
         },
       ),
       _MenuItemData(
         icon: Icons.phone_outlined,
         title: 'Contact Us',
         onTap: () {
-          // Navigate to contact us screen
-          _showComingSoon(context, 'Contact Us');
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const ContactUsScreen(),
+            ),
+          );
         },
       ),
       _MenuItemData(
@@ -256,36 +261,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
 
-  void _showComingSoon(BuildContext context, String feature) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            feature,
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          content: Text(
-            'This feature is coming soon!',
-            style: GoogleFonts.poppins(),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                'OK',
-                style: GoogleFonts.poppins(
-                  color: const Color(0xFF036B52),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   void _handleEditProfilePicture() {
     // Show options dialog for editing profile picture

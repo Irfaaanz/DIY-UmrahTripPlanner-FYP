@@ -23,6 +23,7 @@ class PersonalisationConfirmationScreen extends StatefulWidget {
 
 class _PersonalisationConfirmationScreenState extends State<PersonalisationConfirmationScreen> {
   bool _isSaved = false;
+  String? _tripCreatedAt;
 
   @override
   void initState() {
@@ -31,39 +32,84 @@ class _PersonalisationConfirmationScreenState extends State<PersonalisationConfi
   }
 
   Future<void> _checkIfSaved() async {
-    // Check if this trip is already saved
+    // Check if this trip is already saved by comparing trip data without timestamp
     final prefs = await SharedPreferences.getInstance();
     final savedTrips = prefs.getStringList('saved_trips') ?? [];
-    final tripData = _getTripData();
-    final tripJson = jsonEncode(tripData);
+    
+    // Compare trips by age, budget, and duration (excluding timestamp)
+    bool found = false;
+    String? existingCreatedAt;
+    
+    for (final tripJson in savedTrips) {
+      try {
+        final trip = jsonDecode(tripJson) as Map<String, dynamic>;
+        if (trip['age'] == widget.age &&
+            trip['budget'] == widget.budget &&
+            trip['duration'] == widget.duration) {
+          found = true;
+          existingCreatedAt = trip['createdAt'] as String;
+          break;
+        }
+      } catch (e) {
+        continue;
+      }
+    }
     
     setState(() {
-      _isSaved = savedTrips.contains(tripJson);
+      _isSaved = found;
+      _tripCreatedAt = existingCreatedAt;
     });
   }
 
   Map<String, dynamic> _getTripData() {
+    // Use existing timestamp if trip was already saved, otherwise create new one
     return {
       'age': widget.age,
       'budget': widget.budget,
       'duration': widget.duration,
-      'createdAt': DateTime.now().toIso8601String(),
+      'createdAt': _tripCreatedAt ?? DateTime.now().toIso8601String(),
     };
   }
 
   Future<void> _saveTrip() async {
     try {
+      // Check if trip already exists by comparing age, budget, and duration
       final prefs = await SharedPreferences.getInstance();
       final savedTrips = prefs.getStringList('saved_trips') ?? [];
-      final tripData = _getTripData();
-      final tripJson = jsonEncode(tripData);
       
-      if (!savedTrips.contains(tripJson)) {
+      // Check if a trip with the same age, budget, and duration already exists
+      bool tripExists = false;
+      String? existingCreatedAt;
+      
+      for (final tripJson in savedTrips) {
+        try {
+          final trip = jsonDecode(tripJson) as Map<String, dynamic>;
+          if (trip['age'] == widget.age &&
+              trip['budget'] == widget.budget &&
+              trip['duration'] == widget.duration) {
+            tripExists = true;
+            existingCreatedAt = trip['createdAt'] as String;
+            break;
+          }
+        } catch (e) {
+          continue;
+        }
+      }
+      
+      if (!tripExists) {
+        // Create new trip with new timestamp
+        final tripData = _getTripData();
+        // If we don't have an existing timestamp, generate a new one
+        if (_tripCreatedAt == null) {
+          tripData['createdAt'] = DateTime.now().toIso8601String();
+        }
+        final tripJson = jsonEncode(tripData);
         savedTrips.add(tripJson);
         await prefs.setStringList('saved_trips', savedTrips);
         
         setState(() {
           _isSaved = true;
+          _tripCreatedAt = tripData['createdAt'] as String;
         });
         
         if (mounted) {
@@ -79,6 +125,12 @@ class _PersonalisationConfirmationScreenState extends State<PersonalisationConfi
           );
         }
       } else {
+        // Trip already exists, update the state to reflect this
+        setState(() {
+          _isSaved = true;
+          _tripCreatedAt = existingCreatedAt;
+        });
+        
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

@@ -25,9 +25,13 @@ To optimize Umrah trip planning based on user budget and preferences using Parti
 ## Features
 - Budget-based itinerary generation
 - Cost optimization using PSO
-- Flutter mobile prototype
+- Flutter mobile prototype (iOS platform)
 
 ## Tech Stack
 - Flutter
 - Python (PSO)
 - GitHub
+
+#Apps credentials
+- Email: fan@gmail.com
+- Password: fanh1234

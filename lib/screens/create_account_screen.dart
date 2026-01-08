@@ -61,6 +61,20 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
             builder: (context) => const MainNavigation(),
           ),
         );
+      } else {
+        // Registration succeeded but sign-in failed
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Account created successfully, but automatic sign-in failed. Please sign in manually.',
+                style: GoogleFonts.montserrat(),
+              ),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
       }
     } else {
       if (mounted) {
@@ -372,6 +386,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     );
   }
 }
+
 
 
 
