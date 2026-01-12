@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'personalisation_confirmation_screen.dart';
+import 'optimized_budget_result_screen.dart';
 
-class ResultsScreen extends StatelessWidget {
+class ResultsScreen extends StatefulWidget {
+  final String tripName;
   final int age;
   final double budget;
   final int duration;
@@ -14,6 +15,7 @@ class ResultsScreen extends StatelessWidget {
 
   const ResultsScreen({
     super.key,
+    required this.tripName,
     required this.age,
     required this.budget,
     required this.duration,
@@ -23,6 +25,12 @@ class ResultsScreen extends StatelessWidget {
     required this.flightPreference,
     required this.dailyExpensesPreference,
   });
+
+  @override
+  State<ResultsScreen> createState() => _ResultsScreenState();
+}
+
+class _ResultsScreenState extends State<ResultsScreen> {
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +70,7 @@ class ResultsScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 16),
               // Progress bar
-              _buildProgressBar(7, 7),
+              _buildProgressBar(7, 8),
               const SizedBox(height: 32),
               // Main heading
               Text(
@@ -78,9 +86,10 @@ class ResultsScreen extends StatelessWidget {
               _buildSection(
                 title: 'Basic Information',
                 children: [
-                  _buildInfoRow('Age', '${age} years old'),
-                  _buildInfoRow('Budget', 'RM ${budget.toStringAsFixed(2)}'),
-                  _buildInfoRow('Duration', '$duration ${duration == 1 ? 'day' : 'days'}'),
+                  _buildInfoRow('Trip Name', widget.tripName),
+                  _buildInfoRow('Age', '${widget.age} years old'),
+                  _buildInfoRow('Budget', 'RM ${widget.budget.toStringAsFixed(2)}'),
+                  _buildInfoRow('Duration', '${widget.duration} ${widget.duration == 1 ? 'day' : 'days'}'),
                 ],
               ),
               const SizedBox(height: 24),
@@ -88,9 +97,9 @@ class ResultsScreen extends StatelessWidget {
               _buildSection(
                 title: 'Hotel Preferences',
                 children: [
-                  _buildInfoRow('Hotel Preference', hotelPreference),
-                  _buildInfoRow('Distance to Masjidil Haram', hotelDistance),
-                  _buildInfoRow('Room Type', roomType),
+                  _buildInfoRow('Hotel Preference', widget.hotelPreference),
+                  _buildInfoRow('Distance to Masjidil Haram', widget.hotelDistance),
+                  _buildInfoRow('Room Type', widget.roomType),
                 ],
               ),
               const SizedBox(height: 24),
@@ -98,7 +107,7 @@ class ResultsScreen extends StatelessWidget {
               _buildSection(
                 title: 'Flight Preferences',
                 children: [
-                  _buildInfoRow('Flight Preference', flightPreference),
+                  _buildInfoRow('Flight Preference', widget.flightPreference),
                 ],
               ),
               const SizedBox(height: 24),
@@ -106,7 +115,7 @@ class ResultsScreen extends StatelessWidget {
               _buildSection(
                 title: 'Daily Expenses',
                 children: [
-                  _buildInfoRow('Daily Expenses Preference', dailyExpensesPreference),
+                  _buildInfoRow('Daily Expenses Preference', widget.dailyExpensesPreference),
                 ],
               ),
               const SizedBox(height: 32),
@@ -119,15 +128,16 @@ class ResultsScreen extends StatelessWidget {
                     onPressed: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => PersonalisationConfirmationScreen(
-                            age: age,
-                            budget: budget,
-                            duration: duration,
-                            hotelPreference: hotelPreference,
-                            hotelDistance: hotelDistance,
-                            roomType: roomType,
-                            flightPreference: flightPreference,
-                            dailyExpensesPreference: dailyExpensesPreference,
+                          builder: (context) => OptimizedBudgetResultScreen(
+                            tripName: widget.tripName,
+                            age: widget.age,
+                            budget: widget.budget,
+                            duration: widget.duration,
+                            hotelPreference: widget.hotelPreference,
+                            hotelDistance: widget.hotelDistance,
+                            roomType: widget.roomType,
+                            flightPreference: widget.flightPreference,
+                            dailyExpensesPreference: widget.dailyExpensesPreference,
                           ),
                         ),
                       );

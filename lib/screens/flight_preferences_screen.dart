@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'daily_expenses_screen.dart';
 
 class FlightPreferencesScreen extends StatefulWidget {
+  final String tripName;
   final int age;
   final double budget;
   final int duration;
@@ -12,6 +13,7 @@ class FlightPreferencesScreen extends StatefulWidget {
 
   const FlightPreferencesScreen({
     super.key,
+    required this.tripName,
     required this.age,
     required this.budget,
     required this.duration,
@@ -69,7 +71,7 @@ class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
             children: [
               const SizedBox(height: 16),
               // Progress bar
-              _buildProgressBar(5, 7),
+              _buildProgressBar(5, 8),
               const SizedBox(height: 32),
               // Main heading
               Text(
@@ -141,6 +143,7 @@ class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
                             Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (context) => DailyExpensesScreen(
+                                  tripName: widget.tripName,
                                   age: widget.age,
                                   budget: widget.budget,
                                   duration: widget.duration,

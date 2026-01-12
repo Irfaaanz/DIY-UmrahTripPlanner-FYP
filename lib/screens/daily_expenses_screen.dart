@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'results_screen.dart';
 
 class DailyExpensesScreen extends StatefulWidget {
+  final String tripName;
   final int age;
   final double budget;
   final int duration;
@@ -13,6 +14,7 @@ class DailyExpensesScreen extends StatefulWidget {
 
   const DailyExpensesScreen({
     super.key,
+    required this.tripName,
     required this.age,
     required this.budget,
     required this.duration,
@@ -29,7 +31,7 @@ class DailyExpensesScreen extends StatefulWidget {
 class _DailyExpensesScreenState extends State<DailyExpensesScreen> {
   String? _dailyExpensesPreference;
 
-  final List<String> _dailyExpensesOptions = ['Minimal', 'Moderate', 'Comfortable'];
+  final List<String> _dailyExpensesOptions = ['Comfortable', 'Moderate', 'Minimal'];
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +73,7 @@ class _DailyExpensesScreenState extends State<DailyExpensesScreen> {
             children: [
               const SizedBox(height: 16),
               // Progress bar
-              _buildProgressBar(6, 7),
+              _buildProgressBar(6, 8),
               const SizedBox(height: 32),
               // Main heading
               Text(
@@ -135,6 +137,7 @@ class _DailyExpensesScreenState extends State<DailyExpensesScreen> {
                             Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (context) => ResultsScreen(
+                                  tripName: widget.tripName,
                                   age: widget.age,
                                   budget: widget.budget,
                                   duration: widget.duration,

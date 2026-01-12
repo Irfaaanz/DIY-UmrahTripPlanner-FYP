@@ -3,9 +3,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'duration_input_screen.dart';
 
 class BudgetInputScreen extends StatefulWidget {
+  final String tripName;
   final int age;
 
-  const BudgetInputScreen({super.key, required this.age});
+  const BudgetInputScreen({super.key, required this.tripName, required this.age});
 
   @override
   State<BudgetInputScreen> createState() => _BudgetInputScreenState();
@@ -114,7 +115,7 @@ class _BudgetInputScreenState extends State<BudgetInputScreen> {
             children: [
               const SizedBox(height: 16),
               // Progress bar
-              _buildProgressBar(2, 7),
+              _buildProgressBar(2, 8),
               const SizedBox(height: 32),
               // Main heading - full width
               Text(
@@ -282,6 +283,7 @@ class _BudgetInputScreenState extends State<BudgetInputScreen> {
                             Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (context) => DurationInputScreen(
+                                  tripName: widget.tripName,
                                   age: widget.age,
                                   budget: _budget!,
                                 ),

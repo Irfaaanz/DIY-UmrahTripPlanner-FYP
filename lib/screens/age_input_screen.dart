@@ -10,11 +10,14 @@ class AgeInputScreen extends StatefulWidget {
 }
 
 class _AgeInputScreenState extends State<AgeInputScreen> {
+  final TextEditingController _tripNameController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
+  String _tripName = '';
   int? _age;
 
   @override
   void dispose() {
+    _tripNameController.dispose();
     _ageController.dispose();
     super.dispose();
   }
@@ -57,7 +60,7 @@ class _AgeInputScreenState extends State<AgeInputScreen> {
             children: [
               const SizedBox(height: 16),
               // Progress bar
-              _buildProgressBar(1, 3),
+              _buildProgressBar(1, 8),
               const SizedBox(height: 32),
               // Main heading
               Text(
@@ -69,6 +72,55 @@ class _AgeInputScreenState extends State<AgeInputScreen> {
                 ),
               ),
               const SizedBox(height: 40),
+              // Trip name prompt
+              Text(
+                "Insert your Umrah Trip Name",
+                style: GoogleFonts.montserrat(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 24),
+              // Trip name input field
+              TextField(
+                controller: _tripNameController,
+                decoration: InputDecoration(
+                  hintText: "ian's trip",
+                  hintStyle: GoogleFonts.poppins(
+                    fontSize: 16,
+                    color: Colors.grey[400],
+                  ),
+                  border: UnderlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Colors.grey[300]!,
+                      width: 1,
+                    ),
+                  ),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Colors.grey[300]!,
+                      width: 1,
+                    ),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Colors.grey[400]!,
+                      width: 1.5,
+                    ),
+                  ),
+                ),
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  color: Colors.black87,
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    _tripName = value.trim();
+                  });
+                },
+              ),
+              const SizedBox(height: 32),
               // Age prompt
               Text(
                 "Insert your age",
@@ -148,11 +200,12 @@ class _AgeInputScreenState extends State<AgeInputScreen> {
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _age != null && _age! > 0
+                    onPressed: _tripName.isNotEmpty && _age != null && _age! > 0
                         ? () {
                             Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (context) => BudgetInputScreen(
+                                  tripName: _tripName,
                                   age: _age!,
                                 ),
                               ),
@@ -202,7 +255,7 @@ class _AgeInputScreenState extends State<AgeInputScreen> {
                   right: index < totalSteps - 1 ? 4 : 0,
                 ),
                 decoration: BoxDecoration(
-                  color: isActive ? Colors.grey[600] : Colors.grey[300],
+                  color: isActive ? Colors.grey[600] : Colors.green[300],
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),

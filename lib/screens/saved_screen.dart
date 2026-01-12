@@ -175,6 +175,7 @@ class _SavedScreenState extends State<SavedScreen> {
                     itemCount: _savedTrips.length,
                     itemBuilder: (context, index) {
                       final trip = _savedTrips[index];
+                      final tripName = trip['tripName'] as String? ?? 'Umrah Trip Plan';
                       final age = trip['age'] as int;
                       final budget = trip['budget'] as double;
                       final duration = trip['duration'] as int;
@@ -199,7 +200,7 @@ class _SavedScreenState extends State<SavedScreen> {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          'Umrah Trip Plan',
+                                          tripName,
                                           style: GoogleFonts.poppins(
                                             fontSize: 18,
                                             fontWeight: FontWeight.w600,
@@ -217,47 +218,61 @@ class _SavedScreenState extends State<SavedScreen> {
                                       ],
                                     ),
                                   ),
-                                  IconButton(
-                                    icon: const Icon(
-                                      Icons.delete_outline,
-                                      color: Colors.red,
-                                    ),
-                                    onPressed: () {
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) => AlertDialog(
-                                          title: Text(
-                                            'Delete Trip',
-                                            style: GoogleFonts.poppins(),
-                                          ),
-                                          content: Text(
-                                            'Are you sure you want to delete this trip?',
-                                            style: GoogleFonts.poppins(),
-                                          ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () => Navigator.pop(context),
-                                              child: Text(
-                                                'Cancel',
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.edit_outlined,
+                                          color: Colors.blue,
+                                        ),
+                                        onPressed: () {
+                                          _showEditTripNameDialog(context, index, tripName);
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.delete_outline,
+                                          color: Colors.red,
+                                        ),
+                                        onPressed: () {
+                                          showDialog(
+                                            context: context,
+                                            builder: (context) => AlertDialog(
+                                              title: Text(
+                                                'Delete Trip',
                                                 style: GoogleFonts.poppins(),
                                               ),
-                                            ),
-                                            TextButton(
-                                              onPressed: () {
-                                                Navigator.pop(context);
-                                                _deleteTrip(index);
-                                              },
-                                              child: Text(
-                                                'Delete',
-                                                style: GoogleFonts.poppins(
-                                                  color: Colors.red,
-                                                ),
+                                              content: Text(
+                                                'Are you sure you want to delete this trip?',
+                                                style: GoogleFonts.poppins(),
                                               ),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () => Navigator.pop(context),
+                                                  child: Text(
+                                                    'Cancel',
+                                                    style: GoogleFonts.poppins(),
+                                                  ),
+                                                ),
+                                                TextButton(
+                                                  onPressed: () {
+                                                    Navigator.pop(context);
+                                                    _deleteTrip(index);
+                                                  },
+                                                  child: Text(
+                                                    'Delete',
+                                                    style: GoogleFonts.poppins(
+                                                      color: Colors.red,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
-                                          ],
-                                        ),
-                                      );
-                                    },
+                                          );
+                                        },
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
@@ -326,5 +341,173 @@ class _SavedScreenState extends State<SavedScreen> {
         ),
       ],
     );
+  }
+
+  Future<void> _showEditTripNameDialog(BuildContext context, int index, String currentName) async {
+    final TextEditingController nameController = TextEditingController(text: currentName);
+    
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Edit Trip Name',
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: TextField(
+          controller: nameController,
+          autofocus: true,
+          style: GoogleFonts.poppins(),
+          decoration: InputDecoration(
+            hintText: 'Enter trip name',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          onSubmitted: (value) {
+            final newName = value.trim();
+            if (newName.isNotEmpty) {
+              Navigator.pop(context, newName);
+            }
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.poppins(
+                color: Colors.grey[700],
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              final newName = nameController.text.trim();
+              if (newName.isNotEmpty) {
+                Navigator.pop(context, newName);
+              }
+            },
+            child: Text(
+              'Save',
+              style: GoogleFonts.poppins(
+                color: const Color(0xFF036B52),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    
+    nameController.dispose();
+    
+    if (result != null && result.isNotEmpty) {
+      await _updateTripName(index, result);
+    }
+  }
+
+  Future<void> _updateTripName(int index, String newName) async {
+    try {
+      if (index < 0 || index >= _savedTrips.length) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Invalid trip index',
+                style: GoogleFonts.poppins(),
+              ),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+        return;
+      }
+      
+      final tripToUpdate = _savedTrips[index];
+      final tripToUpdateCreatedAt = tripToUpdate['createdAt'] as String?;
+      
+      if (tripToUpdateCreatedAt == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Trip data is invalid',
+                style: GoogleFonts.poppins(),
+              ),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+        return;
+      }
+      
+      final prefs = await SharedPreferences.getInstance();
+      final savedTrips = prefs.getStringList('saved_trips') ?? [];
+      
+      bool tripFound = false;
+      
+      // Find and update the trip by matching createdAt timestamp
+      for (int i = 0; i < savedTrips.length; i++) {
+        try {
+          final trip = jsonDecode(savedTrips[i]) as Map<String, dynamic>;
+          if (trip['createdAt'] == tripToUpdateCreatedAt) {
+            trip['tripName'] = newName;
+            savedTrips[i] = jsonEncode(trip);
+            tripFound = true;
+            break;
+          }
+        } catch (e) {
+          continue;
+        }
+      }
+      
+      if (tripFound) {
+        await prefs.setStringList('saved_trips', savedTrips);
+        await _loadSavedTrips();
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Trip name updated',
+                style: GoogleFonts.poppins(),
+              ),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Trip not found',
+                style: GoogleFonts.poppins(),
+              ),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error updating trip name: $e',
+              style: GoogleFonts.poppins(),
+            ),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
   }
 }

@@ -3,11 +3,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'hotel_preferences_screen.dart';
 
 class DurationInputScreen extends StatefulWidget {
+  final String tripName;
   final int age;
   final double budget;
 
   const DurationInputScreen({
     super.key,
+    required this.tripName,
     required this.age,
     required this.budget,
   });
@@ -65,7 +67,7 @@ class _DurationInputScreenState extends State<DurationInputScreen> {
             children: [
               const SizedBox(height: 16),
               // Progress bar
-              _buildProgressBar(3, 7),
+              _buildProgressBar(3, 8),
               const SizedBox(height: 32),
               // Main heading - full width
               Text(
@@ -213,6 +215,7 @@ class _DurationInputScreenState extends State<DurationInputScreen> {
                             Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (context) => HotelPreferencesScreen(
+                                  tripName: widget.tripName,
                                   age: widget.age,
                                   budget: widget.budget,
                                   duration: _duration!,

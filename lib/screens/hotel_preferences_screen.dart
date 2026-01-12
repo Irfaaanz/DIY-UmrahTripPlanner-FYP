@@ -3,12 +3,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'flight_preferences_screen.dart';
 
 class HotelPreferencesScreen extends StatefulWidget {
+  final String tripName;
   final int age;
   final double budget;
   final int duration;
 
   const HotelPreferencesScreen({
     super.key,
+    required this.tripName,
     required this.age,
     required this.budget,
     required this.duration,
@@ -23,9 +25,9 @@ class _HotelPreferencesScreenState extends State<HotelPreferencesScreen> {
   String? _hotelDistance;
   String? _roomType;
 
-  final List<String> _hotelPreferences = ['Economy', 'Standard', 'Premium', 'Luxury'];
+  final List<String> _hotelPreferences = ['Luxury', 'Premium', 'Standard', 'Economy'];
   final List<String> _hotelDistances = ['Very Near', 'Near', 'Far'];
-  final List<String> _roomTypes = ['Double', 'Single'];
+  final List<String> _roomTypes = ['Quad', 'Triple', 'Double', 'Single'];
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +69,7 @@ class _HotelPreferencesScreenState extends State<HotelPreferencesScreen> {
             children: [
               const SizedBox(height: 16),
               // Progress bar
-              _buildProgressBar(4, 7),
+              _buildProgressBar(4, 8),
               const SizedBox(height: 32),
               // Main heading
               Text(
@@ -173,6 +175,7 @@ class _HotelPreferencesScreenState extends State<HotelPreferencesScreen> {
                             Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (context) => FlightPreferencesScreen(
+                                  tripName: widget.tripName,
                                   age: widget.age,
                                   budget: widget.budget,
                                   duration: widget.duration,

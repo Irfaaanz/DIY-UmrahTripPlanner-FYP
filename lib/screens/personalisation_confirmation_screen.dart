@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'main_navigation.dart';
 
 class PersonalisationConfirmationScreen extends StatefulWidget {
+  final String tripName;
   final int age;
   final double budget;
   final int duration;
@@ -17,6 +18,7 @@ class PersonalisationConfirmationScreen extends StatefulWidget {
 
   const PersonalisationConfirmationScreen({
     super.key,
+    required this.tripName,
     required this.age,
     required this.budget,
     required this.duration,
@@ -141,6 +143,7 @@ class _PersonalisationConfirmationScreenState extends State<PersonalisationConfi
   Map<String, dynamic> _getTripData() {
     // Use existing timestamp if trip was already saved, otherwise create new one
     return {
+      'tripName': widget.tripName,
       'age': widget.age,
       'budget': widget.budget,
       'duration': widget.duration,
@@ -255,7 +258,7 @@ class _PersonalisationConfirmationScreenState extends State<PersonalisationConfi
       // Format trip data for sharing
       final budgetFormatted = widget.budget.toStringAsFixed(2);
       final shareText = '''
-Umrah Trip Plan
+${widget.tripName}
 
 Age: ${widget.age} years old
 Budget: RM $budgetFormatted
