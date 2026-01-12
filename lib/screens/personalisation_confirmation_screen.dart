@@ -9,12 +9,22 @@ class PersonalisationConfirmationScreen extends StatefulWidget {
   final int age;
   final double budget;
   final int duration;
+  final String hotelPreference;
+  final String hotelDistance;
+  final String roomType;
+  final String flightPreference;
+  final String dailyExpensesPreference;
 
   const PersonalisationConfirmationScreen({
     super.key,
     required this.age,
     required this.budget,
     required this.duration,
+    required this.hotelPreference,
+    required this.hotelDistance,
+    required this.roomType,
+    required this.flightPreference,
+    required this.dailyExpensesPreference,
   });
 
   @override
@@ -28,15 +38,77 @@ class _PersonalisationConfirmationScreenState extends State<PersonalisationConfi
   @override
   void initState() {
     super.initState();
-    _checkIfSaved();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    await _checkIfSaved();
+    // Auto-save trip when confirmation screen appears (silently)
+    await _autoSaveTrip();
+  }
+
+  Future<void> _autoSaveTrip() async {
+    try {
+      // Check if trip already exists
+      final prefs = await SharedPreferences.getInstance();
+      final savedTrips = prefs.getStringList('saved_trips') ?? [];
+      
+      // Check if a trip with the same data already exists
+      bool tripExists = false;
+      String? existingCreatedAt;
+      
+      for (final tripJson in savedTrips) {
+        try {
+          final trip = jsonDecode(tripJson) as Map<String, dynamic>;
+          if (trip['age'] == widget.age &&
+              trip['budget'] == widget.budget &&
+              trip['duration'] == widget.duration &&
+              trip['hotelPreference'] == widget.hotelPreference &&
+              trip['hotelDistance'] == widget.hotelDistance &&
+              trip['roomType'] == widget.roomType &&
+              trip['flightPreference'] == widget.flightPreference &&
+              trip['dailyExpensesPreference'] == widget.dailyExpensesPreference) {
+            tripExists = true;
+            existingCreatedAt = trip['createdAt'] as String;
+            break;
+          }
+        } catch (e) {
+          continue;
+        }
+      }
+      
+      if (!tripExists) {
+        // Create new trip with new timestamp
+        final tripData = _getTripData();
+        if (_tripCreatedAt == null) {
+          tripData['createdAt'] = DateTime.now().toIso8601String();
+        }
+        final tripJson = jsonEncode(tripData);
+        savedTrips.add(tripJson);
+        await prefs.setStringList('saved_trips', savedTrips);
+        
+        setState(() {
+          _isSaved = true;
+          _tripCreatedAt = tripData['createdAt'] as String;
+        });
+      } else {
+        // Trip already exists, update state
+        setState(() {
+          _isSaved = true;
+          _tripCreatedAt = existingCreatedAt;
+        });
+      }
+    } catch (e) {
+      // Silent fail for auto-save
+    }
   }
 
   Future<void> _checkIfSaved() async {
-    // Check if this trip is already saved by comparing trip data without timestamp
+    // Check if this trip is already saved by comparing trip data
     final prefs = await SharedPreferences.getInstance();
     final savedTrips = prefs.getStringList('saved_trips') ?? [];
     
-    // Compare trips by age, budget, and duration (excluding timestamp)
+    // Compare trips by all fields (excluding timestamp)
     bool found = false;
     String? existingCreatedAt;
     
@@ -45,7 +117,12 @@ class _PersonalisationConfirmationScreenState extends State<PersonalisationConfi
         final trip = jsonDecode(tripJson) as Map<String, dynamic>;
         if (trip['age'] == widget.age &&
             trip['budget'] == widget.budget &&
-            trip['duration'] == widget.duration) {
+            trip['duration'] == widget.duration &&
+            trip['hotelPreference'] == widget.hotelPreference &&
+            trip['hotelDistance'] == widget.hotelDistance &&
+            trip['roomType'] == widget.roomType &&
+            trip['flightPreference'] == widget.flightPreference &&
+            trip['dailyExpensesPreference'] == widget.dailyExpensesPreference) {
           found = true;
           existingCreatedAt = trip['createdAt'] as String;
           break;
@@ -67,6 +144,11 @@ class _PersonalisationConfirmationScreenState extends State<PersonalisationConfi
       'age': widget.age,
       'budget': widget.budget,
       'duration': widget.duration,
+      'hotelPreference': widget.hotelPreference,
+      'hotelDistance': widget.hotelDistance,
+      'roomType': widget.roomType,
+      'flightPreference': widget.flightPreference,
+      'dailyExpensesPreference': widget.dailyExpensesPreference,
       'createdAt': _tripCreatedAt ?? DateTime.now().toIso8601String(),
     };
   }
@@ -77,7 +159,7 @@ class _PersonalisationConfirmationScreenState extends State<PersonalisationConfi
       final prefs = await SharedPreferences.getInstance();
       final savedTrips = prefs.getStringList('saved_trips') ?? [];
       
-      // Check if a trip with the same age, budget, and duration already exists
+      // Check if a trip with the same data already exists
       bool tripExists = false;
       String? existingCreatedAt;
       
@@ -86,7 +168,12 @@ class _PersonalisationConfirmationScreenState extends State<PersonalisationConfi
           final trip = jsonDecode(tripJson) as Map<String, dynamic>;
           if (trip['age'] == widget.age &&
               trip['budget'] == widget.budget &&
-              trip['duration'] == widget.duration) {
+              trip['duration'] == widget.duration &&
+              trip['hotelPreference'] == widget.hotelPreference &&
+              trip['hotelDistance'] == widget.hotelDistance &&
+              trip['roomType'] == widget.roomType &&
+              trip['flightPreference'] == widget.flightPreference &&
+              trip['dailyExpensesPreference'] == widget.dailyExpensesPreference) {
             tripExists = true;
             existingCreatedAt = trip['createdAt'] as String;
             break;
@@ -173,6 +260,10 @@ Umrah Trip Plan
 Age: ${widget.age} years old
 Budget: RM $budgetFormatted
 Duration: ${widget.duration} ${widget.duration == 1 ? 'day' : 'days'}
+
+Hotel: ${widget.hotelPreference} - ${widget.hotelDistance} - ${widget.roomType}
+Flight: ${widget.flightPreference}
+Daily Expenses: ${widget.dailyExpensesPreference}
 
 Created with Umrah Trip Planner
 ''';

@@ -27,7 +27,7 @@ class FlightPreferencesScreen extends StatefulWidget {
 class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
   String? _flightPreference;
 
-  final List<String> _flightPreferences = ['Direct', 'Transit', 'No Preference'];
+  final List<String> _flightPreferences = ['Direct', 'Transit'];
 
   @override
   Widget build(BuildContext context) {
@@ -259,7 +259,7 @@ class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
                   right: index < totalSteps - 1 ? 4 : 0,
                 ),
                 decoration: BoxDecoration(
-                  color: isActive ? Colors.grey[600] : Colors.grey[300],
+                  color: isActive ? Colors.grey[600] : Colors.green[300],
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),

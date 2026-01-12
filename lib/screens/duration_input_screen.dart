@@ -164,7 +164,7 @@ class _DurationInputScreenState extends State<DurationInputScreen> {
                           final parsedDuration = int.tryParse(value);
                           setState(() {
                             _duration = parsedDuration;
-                            _showMaxDaysWarning = parsedDuration != null && parsedDuration > 14;
+                            _showMaxDaysWarning = parsedDuration != null && parsedDuration < 5 && parsedDuration > 14;
                           });
                         } else {
                           setState(() {
@@ -192,7 +192,7 @@ class _DurationInputScreenState extends State<DurationInputScreen> {
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
-                    'The maximum days is 14 days',
+                    'The minimum days is 5 days and maximum days is 14 days',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
@@ -264,7 +264,7 @@ class _DurationInputScreenState extends State<DurationInputScreen> {
                   right: index < totalSteps - 1 ? 4 : 0,
                 ),
                 decoration: BoxDecoration(
-                  color: isActive ? Colors.grey[600] : Colors.grey[300],
+                  color: isActive ? Colors.grey[600] : Colors.green[300],
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),

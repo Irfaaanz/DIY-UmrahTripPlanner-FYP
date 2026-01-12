@@ -75,8 +75,8 @@ class _BudgetInputScreenState extends State<BudgetInputScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isBudgetValid = _budget != null && _budget! >= 3000;
-    final bool isBudgetBelowMinimum = _budget != null && _budget! > 0 && _budget! < 3000;
+    final bool isBudgetValid = _budget != null && _budget! >= 4000;
+    final bool isBudgetBelowMinimum = _budget != null && _budget! > 0 && _budget! < 4000;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -114,7 +114,7 @@ class _BudgetInputScreenState extends State<BudgetInputScreen> {
             children: [
               const SizedBox(height: 16),
               // Progress bar
-              _buildProgressBar(2, 3),
+              _buildProgressBar(2, 7),
               const SizedBox(height: 32),
               // Main heading - full width
               Text(
@@ -216,7 +216,7 @@ class _BudgetInputScreenState extends State<BudgetInputScreen> {
               const SizedBox(height: 8),
               // Minimum budget message
               Text(
-                'Minimum amount of budget is RM3,000.00',
+                'Minimum amount of budget is RM4,000.00',
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
@@ -354,7 +354,7 @@ class _BudgetInputScreenState extends State<BudgetInputScreen> {
                   right: index < totalSteps - 1 ? 4 : 0,
                 ),
                 decoration: BoxDecoration(
-                  color: isActive ? Colors.grey[600] : Colors.grey[300],
+                  color: isActive ? Colors.grey[600] : Colors.green[300],
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),

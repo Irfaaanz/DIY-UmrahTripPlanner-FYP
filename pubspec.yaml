@@ -68,6 +68,9 @@ flutter:
     - assets/images/@app-icon.png
     - assets/images/trip-plan-logo.png
     - assets/images/login-image.jpg
+    - assets/images/makkah-img.jpg
+    - assets/images/makkah-img2.jpg
+    - assets/images/madinah.jpeg
     - assets/icons/
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -254,7 +254,7 @@ class _DailyExpensesScreenState extends State<DailyExpensesScreen> {
                   right: index < totalSteps - 1 ? 4 : 0,
                 ),
                 decoration: BoxDecoration(
-                  color: isActive ? Colors.grey[600] : Colors.grey[300],
+                  color: isActive ? Colors.grey[600] : Colors.green[300],
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),

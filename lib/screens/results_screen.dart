@@ -123,6 +123,11 @@ class ResultsScreen extends StatelessWidget {
                             age: age,
                             budget: budget,
                             duration: duration,
+                            hotelPreference: hotelPreference,
+                            hotelDistance: hotelDistance,
+                            roomType: roomType,
+                            flightPreference: flightPreference,
+                            dailyExpensesPreference: dailyExpensesPreference,
                           ),
                         ),
                       );

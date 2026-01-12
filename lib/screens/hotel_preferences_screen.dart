@@ -25,7 +25,7 @@ class _HotelPreferencesScreenState extends State<HotelPreferencesScreen> {
 
   final List<String> _hotelPreferences = ['Economy', 'Standard', 'Premium', 'Luxury'];
   final List<String> _hotelDistances = ['Very Near', 'Near', 'Far'];
-  final List<String> _roomTypes = ['Quad', 'Triple', 'Double', 'Single'];
+  final List<String> _roomTypes = ['Double', 'Single'];
 
   @override
   Widget build(BuildContext context) {
