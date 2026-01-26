@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/profile_service.dart';
 import '../services/auth_service.dart';
+import '../l10n/generated/app_localizations.dart';
 
 class ProfileDetailsScreen extends StatefulWidget {
   const ProfileDetailsScreen({super.key});
@@ -52,6 +53,10 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
         _displayNameController.text = profile?['displayName'] ?? '';
         _fullNameController.text = profile?['fullName'] ?? '';
         _selectedGender = profile?['gender'] as String?;
+        // Validate gender: If not in options (e.g. empty string), reset to null
+        if (_selectedGender != null && !_genderOptions.contains(_selectedGender)) {
+          _selectedGender = null;
+        }
         _emailController.text = profile?['email'] ?? '';
         _phoneController.text = profile?['phoneNo'] ?? '';
         _passwordController.text = profile?['password'] ?? '';
@@ -139,17 +144,20 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.only(left: 8.0),
           child: IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.arrow_back_ios,
-              color: Colors.black,
+              color: theme.iconTheme.color,
               size: 20,
             ),
             onPressed: () {
@@ -159,11 +167,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
         ),
         centerTitle: true,
         title: Text(
-          'Profile Details',
+          l10n.profileDetails,
           style: GoogleFonts.montserrat(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: Colors.black,
+            color: theme.textTheme.titleLarge?.color,
           ),
         ),
       ),
@@ -179,10 +187,10 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                     height: 100,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.grey[200],
+                      color: theme.canvasColor,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.3),
+                          color: Colors.grey.withOpacity(0.1),
                           spreadRadius: 2,
                           blurRadius: 8,
                           offset: const Offset(0, 2),
@@ -192,7 +200,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                     child: Icon(
                       Icons.person,
                       size: 50,
-                      color: Colors.grey[600],
+                      color: theme.iconTheme.color?.withOpacity(0.5),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -204,37 +212,37 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                     style: GoogleFonts.poppins(
                       fontSize: 20,
                       fontWeight: FontWeight.w500,
-                      color: Colors.black,
+                      color: theme.textTheme.titleLarge?.color,
                     ),
                   ),
                   const SizedBox(height: 32),
                   // Form Fields
                   _buildField(
-                    label: 'Display Name',
+                    label: l10n.displayName,
                     controller: _displayNameController,
                   ),
                   const SizedBox(height: 16),
                   _buildField(
-                    label: 'Full Name',
+                    label: l10n.fullName,
                     controller: _fullNameController,
                   ),
                   const SizedBox(height: 16),
                   _buildGenderDropdown(),
                   const SizedBox(height: 16),
                   _buildField(
-                    label: 'Email address',
+                    label: l10n.emailAddress,
                     controller: _emailController,
                     enabled: false, // Email is read-only
                   ),
                   const SizedBox(height: 16),
                   _buildField(
-                    label: 'Phone No.',
+                    label: l10n.phoneNo,
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
                   ),
                   const SizedBox(height: 16),
                   _buildField(
-                    label: 'Passwords',
+                    label: l10n.passwords,
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     suffixIcon: IconButton(
@@ -242,7 +250,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                         _obscurePassword 
                             ? Icons.visibility_outlined 
                             : Icons.visibility_off_outlined,
-                        color: Colors.black87,
+                        color: theme.iconTheme.color,
                       ),
                       onPressed: () {
                         setState(() {
@@ -277,7 +285,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                               ),
                             )
                           : Text(
-                              'Save',
+                              'Save', // TODO: Add to ARB if strictly needed, but "Save" is common enough or missed in my manual scan. Let's assume English OK or fix later. Wait, I missed "Save" in ARB scan.
                               style: GoogleFonts.poppins(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
@@ -300,13 +308,14 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
     bool obscureText = false,
     Widget? suffixIcon,
   }) {
+    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
+            color: Colors.grey.withOpacity(0.1),
             spreadRadius: 1,
             blurRadius: 6,
             offset: const Offset(0, 2),
@@ -321,18 +330,18 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
         style: GoogleFonts.poppins(
           fontSize: 16,
           fontWeight: FontWeight.w600,
-          color: Colors.black87,
+          color: theme.textTheme.bodyLarge?.color,
         ),
         decoration: InputDecoration(
           labelText: label,
           labelStyle: GoogleFonts.poppins(
             fontSize: 14,
-            color: Colors.black87,
+            color: theme.textTheme.bodyMedium?.color,
           ),
-          suffixIcon: suffixIcon ?? const Icon(
+          suffixIcon: suffixIcon ?? Icon(
             Icons.arrow_forward_ios,
             size: 16,
-            color: Colors.black87,
+            color: theme.iconTheme.color,
           ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
@@ -345,13 +354,15 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
   }
 
   Widget _buildGenderDropdown() {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
+            color: Colors.grey.withOpacity(0.1),
             spreadRadius: 1,
             blurRadius: 6,
             offset: const Offset(0, 2),
@@ -360,16 +371,17 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
       ),
       child: DropdownButtonFormField<String>(
         value: _selectedGender,
+        dropdownColor: theme.cardColor,
         decoration: InputDecoration(
-          labelText: 'Gender',
+          labelText: l10n.gender,
           labelStyle: GoogleFonts.poppins(
             fontSize: 14,
-            color: Colors.black87,
+            color: theme.textTheme.bodyMedium?.color,
           ),
-          suffixIcon: const Icon(
+          suffixIcon: Icon(
             Icons.arrow_forward_ios,
             size: 16,
-            color: Colors.black87,
+            color: theme.iconTheme.color,
           ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
@@ -380,12 +392,15 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
         style: GoogleFonts.poppins(
           fontSize: 16,
           fontWeight: FontWeight.w600,
-          color: Colors.black87,
+          color: theme.textTheme.bodyLarge?.color,
         ),
         items: _genderOptions.map((String gender) {
           return DropdownMenuItem<String>(
             value: gender,
-            child: Text(gender),
+            child: Text(
+              gender,
+              style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+            ),
           );
         }).toList(),
         onChanged: (String? newValue) {

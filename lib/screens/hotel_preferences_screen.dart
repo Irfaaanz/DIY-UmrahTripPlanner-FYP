@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'flight_preferences_screen.dart';
+import '../l10n/generated/app_localizations.dart';
 
 class HotelPreferencesScreen extends StatefulWidget {
   final String tripName;
@@ -8,12 +9,17 @@ class HotelPreferencesScreen extends StatefulWidget {
   final double budget;
   final int duration;
 
+  final int daysMakkah;
+  final int daysMadinah;
+
   const HotelPreferencesScreen({
     super.key,
     required this.tripName,
     required this.age,
     required this.budget,
     required this.duration,
+    required this.daysMakkah,
+    required this.daysMadinah,
   });
 
   @override
@@ -31,19 +37,23 @@ class _HotelPreferencesScreenState extends State<HotelPreferencesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bool canProceed = _hotelPreference != null && _hotelDistance != null && _roomType != null;
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    
+    // Valid if hotel pref and distance are selected. Room type is removed from UI.
+    final bool canProceed = _hotelPreference != null && _hotelDistance != null;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.only(left: 8.0),
           child: IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.arrow_back_ios,
-              color: Colors.black,
+              color: theme.iconTheme.color,
               size: 20,
             ),
             onPressed: () {
@@ -53,11 +63,11 @@ class _HotelPreferencesScreenState extends State<HotelPreferencesScreen> {
         ),
         centerTitle: true,
         title: Text(
-          'Personalise My Trips',
+          l10n.personaliseMyTrips,
           style: GoogleFonts.montserrat(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: Colors.black,
+            color: theme.textTheme.titleLarge?.color,
           ),
         ),
       ),
@@ -73,11 +83,11 @@ class _HotelPreferencesScreenState extends State<HotelPreferencesScreen> {
               const SizedBox(height: 32),
               // Main heading
               Text(
-                "Let's start your Umrah\njourney with us",
+                l10n.letsStartJourney,
                 style: GoogleFonts.montserrat(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black,
+                  color: theme.textTheme.titleLarge?.color,
                 ),
               ),
               const SizedBox(height: 16),
@@ -90,27 +100,11 @@ class _HotelPreferencesScreenState extends State<HotelPreferencesScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Choose your",
+                          l10n.chooseHotelPref,
                           style: GoogleFonts.montserrat(
                             fontSize: 24,
                             fontWeight: FontWeight.w700,
-                            color: Colors.black,
-                          ),
-                        ),
-                        Text(
-                          "hotel",
-                          style: GoogleFonts.montserrat(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black,
-                          ),
-                        ),
-                        Text(
-                          "preferences",
-                          style: GoogleFonts.montserrat(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black,
+                            color: theme.textTheme.titleLarge?.color,
                           ),
                         ),
                       ],
@@ -127,8 +121,8 @@ class _HotelPreferencesScreenState extends State<HotelPreferencesScreen> {
               const SizedBox(height: 32),
               // Hotel preferences dropdown
               _buildDropdownField(
-                label: 'Hotel preferences',
-                hintText: 'Pick your hotel preferences',
+                label: l10n.hotelPref,
+                hintText: l10n.pickHotelPref,
                 value: _hotelPreference,
                 items: _hotelPreferences,
                 onChanged: (value) {
@@ -140,8 +134,8 @@ class _HotelPreferencesScreenState extends State<HotelPreferencesScreen> {
               const SizedBox(height: 24),
               // Hotel distance dropdown
               _buildDropdownField(
-                label: 'Hotel distance to Masjidil Haram',
-                hintText: 'Pick your hotel distance',
+                label: l10n.hotelDist,
+                hintText: l10n.pickHotelDist,
                 value: _hotelDistance,
                 items: _hotelDistances,
                 onChanged: (value) {
@@ -150,19 +144,8 @@ class _HotelPreferencesScreenState extends State<HotelPreferencesScreen> {
                   });
                 },
               ),
-              const SizedBox(height: 24),
-              // Room type dropdown
-              _buildDropdownField(
-                label: 'Room type',
-                hintText: 'Pick your room type',
-                value: _roomType,
-                items: _roomTypes,
-                onChanged: (value) {
-                  setState(() {
-                    _roomType = value;
-                  });
-                },
-              ),
+              // Room type dropdown removed as per new design
+
               const Spacer(),
               // Proceed button
               Padding(
@@ -172,6 +155,7 @@ class _HotelPreferencesScreenState extends State<HotelPreferencesScreen> {
                   child: ElevatedButton(
                     onPressed: canProceed
                         ? () {
+                            // Navigate to Flight Preferences Screen
                             Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (context) => FlightPreferencesScreen(
@@ -179,9 +163,11 @@ class _HotelPreferencesScreenState extends State<HotelPreferencesScreen> {
                                   age: widget.age,
                                   budget: widget.budget,
                                   duration: widget.duration,
+                                  daysMakkah: widget.daysMakkah,
+                                  daysMadinah: widget.daysMadinah,
                                   hotelPreference: _hotelPreference!,
                                   hotelDistance: _hotelDistance!,
-                                  roomType: _roomType!,
+                                  roomType: 'Quad', // Default room type
                                 ),
                               ),
                             );
@@ -189,20 +175,20 @@ class _HotelPreferencesScreenState extends State<HotelPreferencesScreen> {
                         : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: canProceed
-                          ? const Color(0xFFB3E5FC)
-                          : Colors.grey[300],
+                          ? const Color(0xFF64D2FF)
+                          : theme.disabledColor,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(30),
                       ),
                       elevation: 0,
                     ),
                     child: Text(
-                      'Proceed',
+                      l10n.proceed,
                       style: GoogleFonts.montserrat(
                         fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                        color: canProceed ? Colors.black87 : Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                        color: canProceed ? Colors.black87 : theme.disabledColor.withOpacity(0.5),
                       ),
                     ),
                   ),
@@ -222,6 +208,7 @@ class _HotelPreferencesScreenState extends State<HotelPreferencesScreen> {
     required List<String> items,
     required ValueChanged<String?> onChanged,
   }) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -230,7 +217,7 @@ class _HotelPreferencesScreenState extends State<HotelPreferencesScreen> {
           style: GoogleFonts.montserrat(
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: Colors.black87,
+            color: theme.textTheme.bodyLarge?.color,
           ),
         ),
         const SizedBox(height: 8),
@@ -238,7 +225,7 @@ class _HotelPreferencesScreenState extends State<HotelPreferencesScreen> {
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: Colors.grey[300]!,
+                color: theme.dividerColor,
                 width: 1,
               ),
             ),
@@ -246,18 +233,19 @@ class _HotelPreferencesScreenState extends State<HotelPreferencesScreen> {
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: value,
+              dropdownColor: theme.canvasColor,
               hint: Text(
                 hintText,
                 style: GoogleFonts.montserrat(
                   fontSize: 16,
                   fontWeight: FontWeight.w400,
-                  color: Colors.grey[400],
+                  color: theme.hintColor,
                 ),
               ),
               isExpanded: true,
-              icon: const Icon(
+              icon: Icon(
                 Icons.keyboard_arrow_down,
-                color: Colors.black87,
+                color: theme.iconTheme.color,
               ),
               items: items.map((String item) {
                 return DropdownMenuItem<String>(
@@ -267,7 +255,7 @@ class _HotelPreferencesScreenState extends State<HotelPreferencesScreen> {
                     style: GoogleFonts.montserrat(
                       fontSize: 16,
                       fontWeight: FontWeight.w400,
-                      color: Colors.black87,
+                      color: theme.textTheme.bodyLarge?.color,
                     ),
                   ),
                 );

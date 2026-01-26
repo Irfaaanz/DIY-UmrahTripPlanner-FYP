@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'budget_input_screen.dart';
+import '../l10n/generated/app_localizations.dart';
 
 class AgeInputScreen extends StatefulWidget {
   const AgeInputScreen({super.key});
@@ -24,17 +25,20 @@ class _AgeInputScreenState extends State<AgeInputScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.only(left: 8.0),
           child: IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.arrow_back_ios,
-              color: Colors.black,
+              color: theme.iconTheme.color,
               size: 20,
             ),
             onPressed: () {
@@ -44,11 +48,11 @@ class _AgeInputScreenState extends State<AgeInputScreen> {
         ),
         centerTitle: true,
         title: Text(
-          'Personalise My Trips',
+          l10n.personaliseMyTrips,
           style: GoogleFonts.montserrat(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: Colors.black,
+            color: theme.textTheme.titleLarge?.color,
           ),
         ),
       ),
@@ -64,21 +68,21 @@ class _AgeInputScreenState extends State<AgeInputScreen> {
               const SizedBox(height: 32),
               // Main heading
               Text(
-                "Let's start your Umrah journey with us",
+                l10n.letsStartJourney,
                 style: GoogleFonts.montserrat(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black,
+                  color: theme.textTheme.titleLarge?.color,
                 ),
               ),
               const SizedBox(height: 40),
               // Trip name prompt
               Text(
-                "Insert your Umrah Trip Name",
+                l10n.insertTripName,
                 style: GoogleFonts.montserrat(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
-                  color: Colors.black,
+                  color: theme.textTheme.titleLarge?.color,
                 ),
               ),
               const SizedBox(height: 24),
@@ -86,33 +90,33 @@ class _AgeInputScreenState extends State<AgeInputScreen> {
               TextField(
                 controller: _tripNameController,
                 decoration: InputDecoration(
-                  hintText: "ian's trip",
+                  hintText: l10n.tripNameHint,
                   hintStyle: GoogleFonts.poppins(
                     fontSize: 16,
-                    color: Colors.grey[400],
+                    color: theme.hintColor,
                   ),
                   border: UnderlineInputBorder(
                     borderSide: BorderSide(
-                      color: Colors.grey[300]!,
+                      color: theme.dividerColor,
                       width: 1,
                     ),
                   ),
                   enabledBorder: UnderlineInputBorder(
                     borderSide: BorderSide(
-                      color: Colors.grey[300]!,
+                      color: theme.dividerColor,
                       width: 1,
                     ),
                   ),
                   focusedBorder: UnderlineInputBorder(
                     borderSide: BorderSide(
-                      color: Colors.grey[400]!,
+                      color: theme.primaryColor,
                       width: 1.5,
                     ),
                   ),
                 ),
                 style: GoogleFonts.poppins(
                   fontSize: 16,
-                  color: Colors.black87,
+                  color: theme.textTheme.bodyLarge?.color,
                 ),
                 onChanged: (value) {
                   setState(() {
@@ -123,11 +127,11 @@ class _AgeInputScreenState extends State<AgeInputScreen> {
               const SizedBox(height: 32),
               // Age prompt
               Text(
-                "Insert your age",
+                l10n.insertAge,
                 style: GoogleFonts.montserrat(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
-                  color: Colors.black,
+                  color: theme.textTheme.titleLarge?.color,
                 ),
               ),
               const SizedBox(height: 24),
@@ -141,6 +145,7 @@ class _AgeInputScreenState extends State<AgeInputScreen> {
                       'assets/icons/calendar.png',
                       width: 24,
                       height: 24,
+                      color: theme.iconTheme.color,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -149,33 +154,33 @@ class _AgeInputScreenState extends State<AgeInputScreen> {
                       controller: _ageController,
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
-                        hintText: '30 years old',
+                        hintText: l10n.ageHint,
                         hintStyle: GoogleFonts.poppins(
                           fontSize: 16,
-                          color: Colors.grey[400],
+                          color: theme.hintColor,
                         ),
                         border: UnderlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.grey[300]!,
+                            color: theme.dividerColor,
                             width: 1,
                           ),
                         ),
                         enabledBorder: UnderlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.grey[300]!,
+                            color: theme.dividerColor,
                             width: 1,
                           ),
                         ),
                         focusedBorder: UnderlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.grey[400]!,
+                            color: theme.primaryColor,
                             width: 1.5,
                           ),
                         ),
                       ),
                       style: GoogleFonts.poppins(
                         fontSize: 16,
-                        color: Colors.black87,
+                        color: theme.textTheme.bodyLarge?.color,
                       ),
                       onChanged: (value) {
                         if (value.isNotEmpty) {
@@ -214,8 +219,8 @@ class _AgeInputScreenState extends State<AgeInputScreen> {
                         : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _age != null && _age! > 0
-                          ? const Color(0xFFE3F2FD)
-                          : Colors.grey[300],
+                          ? const Color(0xFFE3F2FD) // Keep light blue for active state
+                          : theme.disabledColor,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -223,13 +228,13 @@ class _AgeInputScreenState extends State<AgeInputScreen> {
                       elevation: 0,
                     ),
                     child: Text(
-                      'Proceed',
+                      l10n.proceed,
                       style: GoogleFonts.montserrat(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: _age != null && _age! > 0
                             ? Colors.black87
-                            : Colors.grey[600],
+                            : theme.disabledColor.withOpacity(0.5),
                       ),
                     ),
                   ),

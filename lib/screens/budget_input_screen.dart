@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'duration_input_screen.dart';
+import '../l10n/generated/app_localizations.dart';
 
 class BudgetInputScreen extends StatefulWidget {
   final String tripName;
@@ -17,7 +18,7 @@ class _BudgetInputScreenState extends State<BudgetInputScreen> {
   final FocusNode _budgetFocusNode = FocusNode();
   double? _budget;
   String? _selectedBudget;
-  final List<double> _recommendedBudgets = [3000, 6000, 9000, 12000];
+  final List<double> _recommendedBudgets = [4500, 6500, 9500, 12500];
 
   @override
   void dispose() {
@@ -76,20 +77,23 @@ class _BudgetInputScreenState extends State<BudgetInputScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    
     final bool isBudgetValid = _budget != null && _budget! >= 4000;
     final bool isBudgetBelowMinimum = _budget != null && _budget! > 0 && _budget! < 4000;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.only(left: 8.0),
           child: IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.arrow_back_ios,
-              color: Colors.black,
+              color: theme.iconTheme.color,
               size: 20,
             ),
             onPressed: () {
@@ -99,11 +103,11 @@ class _BudgetInputScreenState extends State<BudgetInputScreen> {
         ),
         centerTitle: true,
         title: Text(
-          'Personalise My Trips',
+          l10n.personaliseMyTrips,
           style: GoogleFonts.montserrat(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: Colors.black,
+            color: theme.textTheme.titleLarge?.color,
           ),
         ),
       ),
@@ -119,11 +123,11 @@ class _BudgetInputScreenState extends State<BudgetInputScreen> {
               const SizedBox(height: 32),
               // Main heading - full width
               Text(
-                "Let's start your Umrah journey with us",
+                l10n.letsStartJourney,
                 style: GoogleFonts.montserrat(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black,
+                  color: theme.textTheme.titleLarge?.color,
                 ),
               ),
               const SizedBox(height: 24),
@@ -135,20 +139,15 @@ class _BudgetInputScreenState extends State<BudgetInputScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                         // "Insert your journey budget" splitted in original design, 
+                         // but easier to just use L10n string or split if L10n supports it.
+                         // For now I will assume the l10n string covers the whole sentence.
                         Text(
-                          "Insert your journey",
+                          l10n.insertJourneyBudget,
                           style: GoogleFonts.poppins(
                             fontSize: 32,
                             fontWeight: FontWeight.w500,
-                            color: Colors.black,
-                          ),
-                        ),
-                        Text(
-                          "budget",
-                          style: GoogleFonts.poppins(
-                            fontSize: 32,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black,
+                            color: theme.textTheme.titleLarge?.color,
                           ),
                         ),
                       ],
@@ -171,7 +170,7 @@ class _BudgetInputScreenState extends State<BudgetInputScreen> {
                     style: GoogleFonts.montserrat(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black,
+                      color: theme.textTheme.bodyLarge?.color,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -184,30 +183,30 @@ class _BudgetInputScreenState extends State<BudgetInputScreen> {
                         hintText: '0.00',
                         hintStyle: GoogleFonts.poppins(
                           fontSize: 16,
-                          color: Colors.grey[400],
+                          color: theme.hintColor,
                         ),
                         border: UnderlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.grey[300]!,
+                            color: theme.dividerColor,
                             width: 1,
                           ),
                         ),
                         enabledBorder: UnderlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.grey[300]!,
+                            color: theme.dividerColor,
                             width: 1,
                           ),
                         ),
                         focusedBorder: UnderlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.grey[400]!,
+                            color: theme.primaryColor,
                             width: 1.5,
                           ),
                         ),
                       ),
                       style: GoogleFonts.poppins(
                         fontSize: 16,
-                        color: Colors.black87,
+                        color: theme.textTheme.bodyLarge?.color,
                       ),
                       onChanged: _handleOthersInput,
                     ),
@@ -217,11 +216,11 @@ class _BudgetInputScreenState extends State<BudgetInputScreen> {
               const SizedBox(height: 8),
               // Minimum budget message
               Text(
-                'Minimum amount of budget is RM4,000.00',
+                l10n.minBudgetWarning,
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: isBudgetBelowMinimum ? Colors.red : Colors.black87,
+                  color: isBudgetBelowMinimum ? Colors.red : theme.textTheme.bodyMedium?.color,
                 ),
               ),
               const SizedBox(height: 24),
@@ -256,7 +255,7 @@ class _BudgetInputScreenState extends State<BudgetInputScreen> {
                           ),
                         ),
                       _buildBudgetButton(
-                        'Others',
+                        l10n.others,
                         _selectedBudget == 'others' && _budget != null,
                         () {
                           setState(() {
@@ -294,7 +293,7 @@ class _BudgetInputScreenState extends State<BudgetInputScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: isBudgetValid
                           ? const Color(0xFFE3F2FD)
-                          : Colors.grey[300],
+                          : theme.disabledColor,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -302,11 +301,11 @@ class _BudgetInputScreenState extends State<BudgetInputScreen> {
                       elevation: 0,
                     ),
                       child: Text(
-                        'Proceed',
+                        l10n.proceed,
                         style: GoogleFonts.montserrat(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: isBudgetValid ? Colors.black87 : Colors.grey[600],
+                          color: isBudgetValid ? Colors.black87 : theme.disabledColor.withOpacity(0.5),
                         ),
                       ),
                   ),
@@ -320,12 +319,13 @@ class _BudgetInputScreenState extends State<BudgetInputScreen> {
   }
 
   Widget _buildBudgetButton(String label, bool isSelected, VoidCallback onTap) {
+    final theme = Theme.of(context);
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFE3F2FD) : Colors.grey[200],
+          color: isSelected ? const Color(0xFFE3F2FD) : theme.cardColor,
           borderRadius: BorderRadius.circular(30),
           border: isSelected
               ? Border.all(color: const Color(0xFF90CAF9), width: 2)
@@ -336,7 +336,7 @@ class _BudgetInputScreenState extends State<BudgetInputScreen> {
           style: GoogleFonts.montserrat(
             fontSize: 12,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-            color: Colors.black87,
+            color: theme.textTheme.bodyLarge?.color,
           ),
         ),
       ),

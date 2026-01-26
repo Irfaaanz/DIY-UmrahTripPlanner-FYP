@@ -3,6 +3,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
+import 'optimized_budget_result_screen.dart';
+import '../l10n/generated/app_localizations.dart';
+
+enum SortOption { date, nameAsc, nameDesc }
 
 class SavedScreen extends StatefulWidget {
   const SavedScreen({super.key});
@@ -14,6 +18,11 @@ class SavedScreen extends StatefulWidget {
 class _SavedScreenState extends State<SavedScreen> {
   List<Map<String, dynamic>> _savedTrips = [];
   bool _isLoading = true;
+  SortOption _currentSort = SortOption.date;
+  
+  // Selection Mode State
+  bool _isSelectionMode = false;
+  final Set<String> _selectedTripIds = {}; // Using createdAt as ID
 
   @override
   void initState() {
@@ -34,12 +43,8 @@ class _SavedScreenState extends State<SavedScreen> {
         return jsonDecode(json) as Map<String, dynamic>;
       }).toList();
       
-      // Sort by creation date (newest first)
-      trips.sort((a, b) {
-        final dateA = DateTime.parse(a['createdAt'] as String);
-        final dateB = DateTime.parse(b['createdAt'] as String);
-        return dateB.compareTo(dateA);
-      });
+      // Sort based on current option
+      _sortTripsList(trips);
 
       setState(() {
         _savedTrips = trips;
@@ -49,6 +54,42 @@ class _SavedScreenState extends State<SavedScreen> {
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+
+  void _sortTripsList(List<Map<String, dynamic>> trips) {
+    switch (_currentSort) {
+      case SortOption.date:
+        trips.sort((a, b) {
+          DateTime dateA;
+          DateTime dateB;
+          try {
+             dateA = DateTime.parse(a['createdAt'].toString());
+          } catch (_) {
+             dateA = DateTime(2000); // Fallback old date
+          }
+          try {
+             dateB = DateTime.parse(b['createdAt'].toString());
+          } catch (_) {
+             dateB = DateTime(2000);
+          }
+          return dateB.compareTo(dateA); // Newest first
+        });
+        break;
+      case SortOption.nameAsc:
+        trips.sort((a, b) {
+          final nameA = (a['tripName'] as String? ?? '').toLowerCase();
+          final nameB = (b['tripName'] as String? ?? '').toLowerCase();
+          return nameA.compareTo(nameB);
+        });
+        break;
+      case SortOption.nameDesc:
+        trips.sort((a, b) {
+          final nameA = (a['tripName'] as String? ?? '').toLowerCase();
+          final nameB = (b['tripName'] as String? ?? '').toLowerCase();
+          return nameB.compareTo(nameA);
+        });
+        break;
     }
   }
 
@@ -107,6 +148,86 @@ class _SavedScreenState extends State<SavedScreen> {
     }
   }
 
+  Future<void> _deleteSelectedTrips() async {
+    try {
+      if (_selectedTripIds.isEmpty) return;
+
+      final prefs = await SharedPreferences.getInstance();
+      final savedTrips = prefs.getStringList('saved_trips') ?? [];
+
+      // Remove trips with matching IDs (createdAt)
+      savedTrips.removeWhere((tripJson) {
+        try {
+          final trip = jsonDecode(tripJson) as Map<String, dynamic>;
+          return _selectedTripIds.contains(trip['createdAt']);
+        } catch (e) {
+          return false;
+        }
+      });
+
+      await prefs.setStringList('saved_trips', savedTrips);
+      
+      setState(() {
+         _selectedTripIds.clear();
+         _isSelectionMode = false;
+      });
+      
+      await _loadSavedTrips();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Selected trips deleted',
+              style: GoogleFonts.poppins(),
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      // Error handling
+    }
+  }
+
+  void _navigateToTripDetails(Map<String, dynamic> trip) {
+    if (trip['optimizationResult'] != null) {
+      // New format with saved results
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => OptimizedBudgetResultScreen(
+            tripName: trip['tripName']?.toString() ?? 'Trip',
+            age: int.tryParse(trip['age'].toString()) ?? 25,
+            budget: double.tryParse(trip['budget'].toString()) ?? 5000.0,
+            duration: int.tryParse(trip['duration'].toString()) ?? 10,
+            daysMakkah: 0, 
+            daysMadinah: 0,
+            hotelPreference: trip['hotelPreference']?.toString() ?? 'Standard',
+            hotelDistance: trip['hotelDistance']?.toString() ?? 'Moderate',
+            roomType: trip['roomType']?.toString() ?? 'Quad',
+            flightPreference: trip['flightPreference']?.toString() ?? 'Direct',
+            serviceTypePreference: trip['serviceTypePreference']?.toString() ?? 'Full Service',
+            transportPreference: trip['transportPreference']?.toString() ?? 'Moderate',
+            dailyExpensesPreference: trip['dailyExpensesPreference']?.toString() ?? 'Medium',
+            savedResult: Map<String, dynamic>.from(trip['optimizationResult']),
+          ),
+        ),
+      );
+    } else {
+      // Old format (without saved result) - Show alert
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'This trip was saved before the update and cannot be retrieved exactly. Please create a new trip.',
+            style: GoogleFonts.poppins(),
+          ),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    }
+  }
+
   String _formatDate(String isoDate) {
     try {
       final date = DateTime.parse(isoDate);
@@ -119,20 +240,70 @@ class _SavedScreenState extends State<SavedScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
         centerTitle: true,
+        leading: _isSelectionMode
+            ? IconButton(
+                icon: Icon(Icons.close, color: theme.iconTheme.color),
+                onPressed: () {
+                  setState(() {
+                    _isSelectionMode = false;
+                    _selectedTripIds.clear();
+                  });
+                },
+              )
+            : null,
         title: Text(
-          'Saved',
+          _isSelectionMode ? l10n.selected(_selectedTripIds.length) : l10n.saved,
           style: GoogleFonts.montserrat(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: Colors.black,
+            color: theme.textTheme.titleLarge?.color,
           ),
         ),
+        actions: [
+          if (_isSelectionMode)
+            IconButton(
+              icon: const Icon(Icons.delete_outline, color: Colors.red),
+              onPressed: _selectedTripIds.isEmpty ? null : _deleteSelectedTrips,
+            )
+          else ...[
+             // Sort Menu
+            PopupMenuButton<SortOption>(
+              icon: Icon(Icons.sort, color: theme.iconTheme.color),
+              color: theme.cardColor,
+              onSelected: (SortOption result) {
+                setState(() {
+                  _currentSort = result;
+                  _sortTripsList(_savedTrips);
+                });
+              },
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<SortOption>>[
+                PopupMenuItem<SortOption>(
+                  value: SortOption.date,
+                  child: Text(
+                    l10n.dateNewestFirst,
+                    style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+                  ),
+                ),
+                PopupMenuItem<SortOption>(
+                  value: SortOption.nameAsc,
+                  child: Text(
+                    l10n.nameAZ,
+                    style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
       ),
       body: _isLoading
           ? const Center(
@@ -150,7 +321,7 @@ class _SavedScreenState extends State<SavedScreen> {
                       ),
                       const SizedBox(height: 20),
                       Text(
-                        'No saved items',
+                        l10n.noSavedItems,
                         style: GoogleFonts.poppins(
                           fontSize: 20,
                           fontWeight: FontWeight.w500,
@@ -159,7 +330,7 @@ class _SavedScreenState extends State<SavedScreen> {
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        'Items you save will appear here',
+                        l10n.itemsWillAppearHere,
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           color: Colors.grey[500],
@@ -184,127 +355,180 @@ class _SavedScreenState extends State<SavedScreen> {
                       return Card(
                         margin: const EdgeInsets.only(bottom: 12),
                         elevation: 2,
+                        color: theme.cardColor,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          tripName,
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          _formatDate(createdAt),
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 12,
-                                            color: Colors.grey[600],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(
-                                          Icons.edit_outlined,
-                                          color: Colors.blue,
-                                        ),
-                                        onPressed: () {
-                                          _showEditTripNameDialog(context, index, tripName);
-                                        },
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(
-                                          Icons.delete_outline,
-                                          color: Colors.red,
-                                        ),
-                                        onPressed: () {
-                                          showDialog(
-                                            context: context,
-                                            builder: (context) => AlertDialog(
-                                              title: Text(
-                                                'Delete Trip',
-                                                style: GoogleFonts.poppins(),
-                                              ),
-                                              content: Text(
-                                                'Are you sure you want to delete this trip?',
-                                                style: GoogleFonts.poppins(),
-                                              ),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed: () => Navigator.pop(context),
-                                                  child: Text(
-                                                    'Cancel',
-                                                    style: GoogleFonts.poppins(),
-                                                  ),
-                                                ),
-                                                TextButton(
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                    _deleteTrip(index);
-                                                  },
-                                                  child: Text(
-                                                    'Delete',
-                                                    style: GoogleFonts.poppins(
-                                                      color: Colors.red,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onLongPress: () {
+                            setState(() {
+                              _isSelectionMode = true;
+                              _selectedTripIds.add(createdAt);
+                            });
+                          },
+                          onTap: () {
+                            if (_isSelectionMode) {
+                              setState(() {
+                                if (_selectedTripIds.contains(createdAt)) {
+                                  _selectedTripIds.remove(createdAt);
+                                  if (_selectedTripIds.isEmpty) {
+                                    _isSelectionMode = false;
+                                  }
+                                } else {
+                                  _selectedTripIds.add(createdAt);
+                                }
+                              });
+                            } else {
+                              _navigateToTripDetails(trip);
+                            }
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: _isSelectionMode && _selectedTripIds.contains(createdAt)
+                                  ? theme.primaryColor.withOpacity(0.1)
+                                  : null,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            tripName,
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w600,
+                                              color: theme.textTheme.titleLarge?.color,
                                             ),
-                                          );
-                                        },
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            _formatDate(createdAt),
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                              color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              Divider(color: Colors.grey[300]),
-                              const SizedBox(height: 12),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _buildInfoItem(
-                                      'Age',
-                                      '$age years',
-                                      Icons.person_outline,
                                     ),
-                                  ),
-                                  Expanded(
-                                    child: _buildInfoItem(
-                                      'Budget',
-                                      'RM ${budget.toStringAsFixed(2)}',
-                                      Icons.account_balance_wallet_outlined,
+                                    if (_isSelectionMode)
+                                      Checkbox(
+                                        value: _selectedTripIds.contains(createdAt),
+                                        activeColor: theme.primaryColor,
+                                        onChanged: (val) {
+                                          setState(() {
+                                            if (val == true) {
+                                              _selectedTripIds.add(createdAt);
+                                            } else {
+                                              _selectedTripIds.remove(createdAt);
+                                              if (_selectedTripIds.isEmpty) {
+                                                _isSelectionMode = false;
+                                              }
+                                            }
+                                          });
+                                        },
+                                      )
+                                    else
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          IconButton(
+                                            icon: Icon(
+                                              Icons.edit_outlined,
+                                              color: Colors.blue,
+                                            ),
+                                            onPressed: () {
+                                              _showEditTripNameDialog(context, index, tripName);
+                                            },
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(
+                                              Icons.delete_outline,
+                                              color: Colors.red,
+                                            ),
+                                            onPressed: () {
+                                              showDialog(
+                                                context: context,
+                                                builder: (context) => AlertDialog(
+                                                  backgroundColor: theme.canvasColor,
+                                                  title: Text(
+                                                    l10n.deleteTrip,
+                                                    style: GoogleFonts.poppins(color: theme.textTheme.titleLarge?.color),
+                                                  ),
+                                                  content: Text(
+                                                    l10n.areYouSureDelete,
+                                                    style: GoogleFonts.poppins(color: theme.textTheme.bodyLarge?.color),
+                                                  ),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () => Navigator.pop(context),
+                                                      child: Text(
+                                                        l10n.cancel,
+                                                        style: GoogleFonts.poppins(
+                                                          color: Colors.grey[700],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    TextButton(
+                                                      onPressed: () {
+                                                        Navigator.pop(context);
+                                                        _deleteTrip(index);
+                                                      },
+                                                      child: Text(
+                                                        l10n.delete,
+                                                        style: GoogleFonts.poppins(
+                                                          color: Colors.red,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Divider(color: Colors.grey[300]),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildInfoItem(
+                                        l10n.age,
+                                        '$age ${l10n.years}',
+                                        Icons.person_outline,
+                                      ),
                                     ),
-                                  ),
-                                  Expanded(
-                                    child: _buildInfoItem(
-                                      'Duration',
-                                      '$duration ${duration == 1 ? 'day' : 'days'}',
-                                      Icons.calendar_today_outlined,
+                                    Expanded(
+                                      child: _buildInfoItem(
+                                        l10n.budget,
+                                        'RM ${budget.toStringAsFixed(2)}',
+                                        Icons.account_balance_wallet_outlined,
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                                    Expanded(
+                                      child: _buildInfoItem(
+                                        l10n.duration,
+                                        '$duration ${duration == 1 ? l10n.day : l10n.days}',
+                                        Icons.calendar_today_outlined,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       );
@@ -315,19 +539,20 @@ class _SavedScreenState extends State<SavedScreen> {
   }
 
   Widget _buildInfoItem(String label, String value, IconData icon) {
+    final theme = Theme.of(context);
     return Column(
       children: [
         Icon(
           icon,
           size: 20,
-          color: Colors.grey[600],
+          color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
         ),
         const SizedBox(height: 4),
         Text(
           label,
           style: GoogleFonts.poppins(
             fontSize: 12,
-            color: Colors.grey[600],
+            color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
           ),
         ),
         const SizedBox(height: 2),
@@ -336,7 +561,7 @@ class _SavedScreenState extends State<SavedScreen> {
           style: GoogleFonts.poppins(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Colors.black87,
+            color: theme.textTheme.titleLarge?.color,
           ),
         ),
       ],
@@ -345,22 +570,27 @@ class _SavedScreenState extends State<SavedScreen> {
 
   Future<void> _showEditTripNameDialog(BuildContext context, int index, String currentName) async {
     final TextEditingController nameController = TextEditingController(text: currentName);
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     
     final result = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: theme.canvasColor,
         title: Text(
-          'Edit Trip Name',
+          l10n.editTripName,
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.w600,
+            color: theme.textTheme.titleLarge?.color,
           ),
         ),
         content: TextField(
           controller: nameController,
           autofocus: true,
-          style: GoogleFonts.poppins(),
+          style: GoogleFonts.poppins(color: theme.textTheme.bodyLarge?.color),
           decoration: InputDecoration(
-            hintText: 'Enter trip name',
+            hintText: l10n.enterTripName,
+            hintStyle: TextStyle(color: theme.textTheme.bodyMedium?.color?.withOpacity(0.5)),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
             ),
@@ -376,7 +606,7 @@ class _SavedScreenState extends State<SavedScreen> {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              'Cancel',
+              l10n.cancel,
               style: GoogleFonts.poppins(
                 color: Colors.grey[700],
               ),
@@ -390,7 +620,7 @@ class _SavedScreenState extends State<SavedScreen> {
               }
             },
             child: Text(
-              'Save',
+              l10n.save,
               style: GoogleFonts.poppins(
                 color: const Color(0xFF036B52),
                 fontWeight: FontWeight.w600,

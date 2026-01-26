@@ -6,6 +6,7 @@ import '../services/auth_service.dart';
 import 'my_trips_screen.dart';
 import '../providers/theme_provider.dart';
 import '../providers/language_provider.dart';
+import '../l10n/generated/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -32,26 +33,37 @@ class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   // Carousel data
-  final List<CarouselItem> _carouselItems = [
-    CarouselItem(
-      image: 'assets/images/makkah-img.jpg',
-      text: 'Explore Your Umrah Journey Now!',
-    ),
-    CarouselItem(
-      image: 'assets/images/makkah-img2.jpg',
-      text: 'Plan Your Journey Without Headache',
-    ),
-    CarouselItem(
-      image: 'assets/images/madinah.jpeg',
-      text: 'Explore What You Need Now',
-    ),
-  ];
+  List<CarouselItem> _carouselItems = [];
 
   @override
   void initState() {
     super.initState();
     _loadUserName();
     _startAutoScroll();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _updateCarouselItems();
+  }
+
+  void _updateCarouselItems() {
+    final l10n = AppLocalizations.of(context)!;
+    _carouselItems = [
+      CarouselItem(
+        image: 'assets/images/makkah-img.jpg',
+        text: l10n.carouselExploreTitle,
+      ),
+      CarouselItem(
+        image: 'assets/images/makkah-img2.jpg',
+        text: l10n.carouselPlanTitle,
+      ),
+      CarouselItem(
+        image: 'assets/images/madinah.jpeg',
+        text: l10n.carouselNeedsTitle,
+      ),
+    ];
   }
 
   @override
@@ -72,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _startAutoScroll() {
     _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
-      if (_pageController.hasClients) {
+      if (_pageController.hasClients && _carouselItems.isNotEmpty) {
         _currentPage = (_currentPage + 1) % _carouselItems.length;
         _pageController.animateToPage(
           _currentPage,
@@ -101,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       drawer: _buildDrawer(),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -130,10 +142,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return Consumer2<ThemeProvider, LanguageProvider>(
       builder: (context, themeProvider, languageProvider, _) {
         final isDark = themeProvider.isDarkMode;
-        final isMalay = languageProvider.currentLanguage == AppLanguage.malay;
+        final l10n = AppLocalizations.of(context)!;
         
         return Drawer(
-          backgroundColor: isDark ? Colors.grey[900] : Colors.white,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           child: SafeArea(
             child: Column(
               children: [
@@ -142,25 +154,25 @@ class _HomeScreenState extends State<HomeScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: isDark ? Colors.grey[800] : const Color(0xFFE3F2FD),
+                    color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFE3F2FD),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'DIY Umrah Buddy',
+                        l10n.diyUmrahBuddy,
                         style: GoogleFonts.poppins(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : Colors.black87,
+                          color: Theme.of(context).textTheme.titleLarge?.color,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        isMalay ? 'Pelan Perjalanan Umrah' : 'Umrah Trip Planner',
+                        l10n.umrahTripPlannerSubtitle,
                         style: GoogleFonts.poppins(
                           fontSize: 14,
-                          color: isDark ? Colors.grey[300] : Colors.black54,
+                          color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
                         ),
                       ),
                     ],
@@ -171,19 +183,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 ListTile(
                   leading: Icon(
                     Icons.settings,
-                    color: isDark ? Colors.white : Colors.black87,
+                    color: Theme.of(context).iconTheme.color,
                   ),
                   title: Text(
-                    isMalay ? 'Tetapan' : 'Settings',
+                    l10n.settings,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      color: isDark ? Colors.white : Colors.black87,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
                     ),
                   ),
                   trailing: Icon(
                     _isSettingsExpanded ? Icons.expand_less : Icons.expand_more,
-                    color: isDark ? Colors.grey[400] : Colors.black54,
+                    color: Theme.of(context).iconTheme.color?.withOpacity(0.5),
                   ),
                   onTap: () {
                     setState(() {
@@ -195,7 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 // Expandable Settings Content
                 if (_isSettingsExpanded) ...[
                   Container(
-                    color: isDark ? Colors.grey[850] : Colors.grey[50],
+                    color: isDark ? const Color(0xFF2C2C2C) : Colors.grey[50], // Slightly lighter/darker than bg
                     child: Column(
                       children: [
                         // Mode Toggle
@@ -208,11 +220,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                isMalay ? 'Mod' : 'Mode',
+                                l10n.mode,
                                 style: GoogleFonts.poppins(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
-                                  color: isDark ? Colors.white : Colors.black87,
+                                  color: Theme.of(context).textTheme.bodyLarge?.color,
                                 ),
                               ),
                               _buildModeToggle(themeProvider, isDark),
@@ -230,11 +242,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                isMalay ? 'Bahasa' : 'Language',
+                                l10n.language,
                                 style: GoogleFonts.poppins(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
-                                  color: isDark ? Colors.white : Colors.black87,
+                                  color: Theme.of(context).textTheme.bodyLarge?.color,
                                 ),
                               ),
                               _buildLanguageSelector(languageProvider, isDark),
@@ -258,11 +270,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            isMalay ? 'Versi Aplikasi' : 'App Version',
+                            l10n.appVersion,
                             style: GoogleFonts.poppins(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: isDark ? Colors.grey[400] : Colors.black54,
+                              color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.5),
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -271,7 +283,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             style: GoogleFonts.poppins(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: isDark ? Colors.white : Colors.black87,
+                              color: Theme.of(context).textTheme.bodyLarge?.color,
                             ),
                           ),
                         ],
@@ -454,7 +466,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Welcome Onboards, $_userName!',
+                    AppLocalizations.of(context)!.welcomeUser(_userName),
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -556,6 +568,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildCategoryFilterBar() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       height: 50,
@@ -563,27 +576,27 @@ class _HomeScreenState extends State<HomeScreen> {
         scrollDirection: Axis.horizontal,
         children: [
           _buildCategoryFilterItem(
-            label: 'All',
+            label: l10n.all,
             isSelected: _selectedCategory == CategoryType.all,
             onTap: () => setState(() => _selectedCategory = CategoryType.all),
           ),
           const SizedBox(width: 16),
           _buildCategoryFilterItem(
-            label: 'Worship Places',
+            label: l10n.worshipPlaces,
             icon: Icons.mosque,
             isSelected: _selectedCategory == CategoryType.worshipPlaces,
             onTap: () => setState(() => _selectedCategory = CategoryType.worshipPlaces),
           ),
           const SizedBox(width: 16),
           _buildCategoryFilterItem(
-            label: 'Must Visit Place',
+            label: l10n.mustVisitPlace,
             icon: Icons.location_city,
             isSelected: _selectedCategory == CategoryType.mustVisitPlace,
             onTap: () => setState(() => _selectedCategory = CategoryType.mustVisitPlace),
           ),
           const SizedBox(width: 16),
           _buildCategoryFilterItem(
-            label: 'Umrah Basic Needs',
+            label: l10n.umrahBasicNeeds,
             icon: Icons.checklist,
             isSelected: _selectedCategory == CategoryType.umrahBasicNeeds,
             onTap: () => setState(() => _selectedCategory = CategoryType.umrahBasicNeeds),
@@ -599,6 +612,10 @@ class _HomeScreenState extends State<HomeScreen> {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
+    final theme = Theme.of(context);
+    final borderColor = isSelected ? theme.textTheme.bodyLarge?.color ?? Colors.black : Colors.transparent;
+    final contentColor = theme.textTheme.bodyLarge?.color ?? Colors.black87;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -606,7 +623,7 @@ class _HomeScreenState extends State<HomeScreen> {
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: isSelected ? Colors.black : Colors.transparent,
+              color: borderColor,
               width: 2,
             ),
           ),
@@ -618,7 +635,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Icon(
                 icon,
                 size: 20,
-                color: Colors.black87,
+                color: contentColor,
               ),
               const SizedBox(width: 8),
             ],
@@ -627,7 +644,7 @@ class _HomeScreenState extends State<HomeScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                color: Colors.black87,
+                color: contentColor,
               ),
             ),
           ],
@@ -650,38 +667,41 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildAllContent() {
+    final l10n = AppLocalizations.of(context)!;
+    final textColor = Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black87;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Explore things to do in Saudi Arabia',
+            l10n.exploreSaudi,
             style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: Colors.black87,
+              color: textColor,
             ),
           ),
           const SizedBox(height: 16),
           _buildCategoryCard(
             image: 'assets/images/makkah-img.jpg',
-            title: 'Start your journey with your first trip and plan your itinerary',
-            buttonText: 'Explore here',
+            title: l10n.startJourney,
+            buttonText: l10n.exploreHere,
             onTap: _navigateToMyTrips,
           ),
           const SizedBox(height: 16),
           _buildCategoryCard(
             image: 'assets/images/makkah-img2.jpg',
-            title: 'Check out must-see sights and activities',
-            buttonText: 'Explore Makkah',
+            title: l10n.checkOutSights,
+            buttonText: l10n.exploreMakkah,
             onTap: _navigateToMyTrips,
           ),
           const SizedBox(height: 16),
           _buildCategoryCard(
             image: 'assets/images/madinah.jpeg',
-            title: 'Check out must-see sights and activities',
-            buttonText: 'Explore Madinah',
+            title: l10n.checkOutSights,
+            buttonText: l10n.exploreMadinah,
             onTap: _navigateToMyTrips,
           ),
         ],
@@ -690,17 +710,22 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildWorshipPlacesContent() {
+    final l10n = AppLocalizations.of(context)!;
+
+    final titleColor = Theme.of(context).textTheme.titleLarge?.color ?? Colors.black87;
+    final subtitleColor = Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black87;
+
     final places = [
-      'Masjid al-Haram',
-      'Jabal al-Nour (Cave of Hira)',
-      'Jabal Thawr',
-      'Jannat al-Mu\'alla',
-      'Masjid Al-Jinn',
-      'Masjid Aisha (Taneem)',
-      'Mount Arafat (Jabal al-Rahmah)',
-      'Mina & Muzdalifah',
-      'Birthplace of the Prophet (Mawlid)',
-      'Masjid Al-Rayyah',
+      l10n.masjidAlHaram,
+      l10n.jabalAlNour,
+      l10n.jabalThawr,
+      l10n.jannatAlMualla,
+      l10n.masjidAlJinn,
+      l10n.masjidAisha,
+      l10n.mountArafat,
+      l10n.minaMuzdalifah,
+      l10n.birthplaceProphet,
+      l10n.masjidAlRayyah,
     ];
 
     return Padding(
@@ -709,20 +734,20 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Makkah (The Holy City)',
+            l10n.makkahHolyCity,
             style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: titleColor,
             ),
           ),
           const SizedBox(height: 4),
           Text(
-            'Worship and Ziyarat Places',
+            l10n.worshipAndZiyarat,
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w400,
-              color: Colors.black87,
+              color: subtitleColor,
             ),
           ),
           const SizedBox(height: 16),
@@ -733,17 +758,21 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildMustVisitPlaceContent() {
+    final l10n = AppLocalizations.of(context)!;
+    final TitleColor = Theme.of(context).textTheme.titleLarge?.color ?? Colors.black87;
+    final SubtitleColor = Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black87;
+
     final places = [
-      'Masjid al-Haram',
-      'Jabal al-Nour (Cave of Hira)',
-      'Jabal Thawr',
-      'Jannat al-Mu\'alla',
-      'Masjid Al-Jinn',
-      'Masjid Aisha (Taneem)',
-      'Mount Arafat (Jabal al-Rahmah)',
-      'Mina & Muzdalifah',
-      'Birthplace of the Prophet (Mawlid)',
-      'Masjid Al-Rayyah',
+      l10n.masjidAlHaram,
+      l10n.jabalAlNour,
+      l10n.jabalThawr,
+      l10n.jannatAlMualla,
+      l10n.masjidAlJinn,
+      l10n.masjidAisha,
+      l10n.mountArafat,
+      l10n.minaMuzdalifah,
+      l10n.birthplaceProphet,
+      l10n.masjidAlRayyah,
     ];
 
     return Padding(
@@ -752,20 +781,20 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Must Visit Place',
+            l10n.mustVisitPlace,
             style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: TitleColor,
             ),
           ),
           const SizedBox(height: 4),
           Text(
-            'Worship and Ziyarat Places',
+            l10n.worshipAndZiyarat,
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w400,
-              color: Colors.black87,
+              color: SubtitleColor,
             ),
           ),
           const SizedBox(height: 16),
@@ -776,17 +805,24 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildUmrahBasicNeedsContent() {
+    final l10n = AppLocalizations.of(context)!;
+    final titleColor = Theme.of(context).textTheme.titleLarge?.color ?? Colors.black87;
+    final subtitleColor = Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black87;
+
     final places = [
-      'Masjid al-Haram',
-      'Jabal al-Nour (Cave of Hira)',
-      'Jabal Thawr',
-      'Jannat al-Mu\'alla',
-      'Masjid Al-Jinn',
-      'Masjid Aisha (Taneem)',
-      'Mount Arafat (Jabal al-Rahmah)',
-      'Mina & Muzdalifah',
-      'Birthplace of the Prophet (Mawlid)',
-      'Masjid Al-Rayyah',
+      l10n.masjidAlHaram,
+      // For basic needs, maybe we want different items, but reusing is fine if they are places.
+      // Or maybe basic needs are different?
+      // The original code reused the same list.
+      l10n.jabalAlNour,
+      l10n.jabalThawr,
+      l10n.jannatAlMualla,
+      l10n.masjidAlJinn,
+      l10n.masjidAisha,
+      l10n.mountArafat,
+      l10n.minaMuzdalifah,
+      l10n.birthplaceProphet,
+      l10n.masjidAlRayyah,
     ];
 
     return Padding(
@@ -795,20 +831,20 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Umrah Basic Needs',
+            l10n.umrahBasicNeeds,
             style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: titleColor,
             ),
           ),
           const SizedBox(height: 4),
           Text(
-            'Worship and Ziyarat Places',
+            l10n.worshipAndZiyarat,
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w400,
-              color: Colors.black87,
+              color: subtitleColor,
             ),
           ),
           const SizedBox(height: 16),
@@ -821,11 +857,16 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildPlaceItem(String placeName) {
     final isExpanded = _expandedPlaces.contains(placeName);
     const loremIpsum = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.';
+    
+    final theme = Theme.of(context);
+    final cardColor = theme.cardColor; // Or theme.scaffoldBackgroundColor depending on design
+    final textColor = theme.textTheme.bodyLarge?.color ?? Colors.black87;
+    final subTextColor = theme.textTheme.bodyMedium?.color ?? Colors.black54;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.scaffoldBackgroundColor, // Using scaffold bg or card bg
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -835,6 +876,7 @@ class _HomeScreenState extends State<HomeScreen> {
             offset: const Offset(0, 2),
           ),
         ],
+        border: Border.all(color: Colors.grey.withOpacity(0.1)),
       ),
       child: Column(
         children: [
@@ -844,13 +886,13 @@ class _HomeScreenState extends State<HomeScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
-                color: Colors.black87,
+                color: textColor,
               ),
             ),
             trailing: Icon(
               isExpanded ? Icons.expand_less : Icons.expand_more,
               size: 24,
-              color: Colors.black54,
+              color: subTextColor,
             ),
             onTap: () {
               setState(() {
@@ -871,7 +913,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: Colors.black87,
+                  color: textColor,
                   height: 1.5,
                 ),
               ),

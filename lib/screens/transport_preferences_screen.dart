@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'transport_preferences_screen.dart';
+import 'daily_expenses_screen.dart';
 import '../l10n/generated/app_localizations.dart';
 
-class FlightPreferencesScreen extends StatefulWidget {
+class TransportPreferencesScreen extends StatefulWidget {
   final String tripName;
   final int age;
   final double budget;
@@ -13,8 +13,10 @@ class FlightPreferencesScreen extends StatefulWidget {
   final String hotelPreference;
   final String hotelDistance;
   final String roomType;
+  final String flightPreference;
+  final String serviceTypePreference;
 
-  const FlightPreferencesScreen({
+  const TransportPreferencesScreen({
     super.key,
     required this.tripName,
     required this.age,
@@ -25,24 +27,23 @@ class FlightPreferencesScreen extends StatefulWidget {
     required this.hotelPreference,
     required this.hotelDistance,
     required this.roomType,
+    required this.flightPreference,
+    required this.serviceTypePreference,
   });
 
   @override
-  State<FlightPreferencesScreen> createState() => _FlightPreferencesScreenState();
+  State<TransportPreferencesScreen> createState() => _TransportPreferencesScreenState();
 }
 
-class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
-  String? _flightPreference;
-  String? _serviceTypePreference;
-
-  final List<String> _flightPreferences = ['Direct', 'Transit'];
-  final List<String> _serviceTypePreferences = ['Full Service', 'Low Cost'];
+class _TransportPreferencesScreenState extends State<TransportPreferencesScreen> {
+  String? _transportPreference;
+  final List<String> _transportPreferences = ['Comfortable', 'Moderate', 'Minimal'];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
-    final bool canProceed = _flightPreference != null && _serviceTypePreference != null;
+    final bool canProceed = _transportPreference != null;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -80,7 +81,7 @@ class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
             children: [
               const SizedBox(height: 16),
               // Progress bar
-              _buildProgressBar(6, 8),
+              _buildProgressBar(5, 8),
               const SizedBox(height: 32),
               // Main heading
               Text(
@@ -92,7 +93,7 @@ class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              // Flight preferences heading with icon
+              // Transport heading with icon
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -101,7 +102,7 @@ class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          l10n.chooseFlightPref,
+                          l10n.chooseTransportPref,
                           style: GoogleFonts.montserrat(
                             fontSize: 24,
                             fontWeight: FontWeight.w700,
@@ -112,40 +113,69 @@ class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  Image.asset(
-                    'assets/icons/airplane.png',
-                    width: 70,
-                    height: 70,
+                  Icon(
+                    Icons.directions_car_outlined,
+                    size: 80,
+                    color: theme.iconTheme.color,
                   ),
                 ],
               ),
               const SizedBox(height: 32),
-              // Flight preference dropdown
-              _buildDropdownField(
-                label: l10n.flightPref,
-                hintText: l10n.pickFlightPref,
-                value: _flightPreference,
-                items: _flightPreferences,
-                onChanged: (value) {
-                  setState(() {
-                    _flightPreference = value;
-                  });
-                },
+              
+              // Transport preference dropdown
+              Text(
+                l10n.transportPref,
+                style: GoogleFonts.montserrat(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: theme.textTheme.bodyLarge?.color,
+                ),
               ),
-              const SizedBox(height: 24),
-              // Airline Service Type dropdown
-              _buildDropdownField(
-                label: l10n.airlineServiceType,
-                hintText: l10n.pickServiceType,
-                value: _serviceTypePreference,
-                items: _serviceTypePreferences,
-                onChanged: (value) {
-                  setState(() {
-                    _serviceTypePreference = value;
-                  });
-                },
+              const SizedBox(height: 8),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: theme.dividerColor, width: 1),
+                  ),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _transportPreference,
+                    dropdownColor: theme.canvasColor,
+                    hint: Text(
+                      l10n.pickTransportPref,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                        color: theme.hintColor,
+                      ),
+                    ),
+                    isExpanded: true,
+                    icon: Icon(Icons.keyboard_arrow_down, color: theme.iconTheme.color),
+                    items: _transportPreferences.map((String item) {
+                      return DropdownMenuItem<String>(
+                        value: item,
+                        child: Text(
+                          item,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                            color: theme.textTheme.bodyLarge?.color,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _transportPreference = value;
+                      });
+                    },
+                  ),
+                ),
               ),
+              
               const Spacer(),
+              
               // Proceed button
               Padding(
                 padding: const EdgeInsets.only(bottom: 20),
@@ -156,7 +186,7 @@ class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
                         ? () {
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (context) => TransportPreferencesScreen(
+                                builder: (context) => DailyExpensesScreen(
                                   tripName: widget.tripName,
                                   age: widget.age,
                                   budget: widget.budget,
@@ -166,8 +196,9 @@ class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
                                   hotelPreference: widget.hotelPreference,
                                   hotelDistance: widget.hotelDistance,
                                   roomType: widget.roomType,
-                                  flightPreference: _flightPreference!,
-                                  serviceTypePreference: _serviceTypePreference!,
+                                  flightPreference: widget.flightPreference,
+                                  serviceTypePreference: widget.serviceTypePreference,
+                                  transportPreference: _transportPreference!,
                                 ),
                               ),
                             );
@@ -201,73 +232,6 @@ class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
     );
   }
 
-  Widget _buildDropdownField({
-    required String label,
-    required String hintText,
-    required String? value,
-    required List<String> items,
-    required ValueChanged<String?> onChanged,
-  }) {
-    final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.montserrat(
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-            color: theme.textTheme.bodyLarge?.color,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: theme.dividerColor,
-                width: 1,
-              ),
-            ),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: value,
-              dropdownColor: theme.canvasColor,
-              hint: Text(
-                hintText,
-                style: GoogleFonts.montserrat(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                  color: theme.hintColor,
-                ),
-              ),
-              isExpanded: true,
-              icon: Icon(
-                Icons.keyboard_arrow_down,
-                color: theme.iconTheme.color,
-              ),
-              items: items.map((String item) {
-                return DropdownMenuItem<String>(
-                  value: item,
-                  child: Text(
-                    item,
-                    style: GoogleFonts.montserrat(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      color: theme.textTheme.bodyLarge?.color,
-                    ),
-                  ),
-                );
-              }).toList(),
-              onChanged: onChanged,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildProgressBar(int currentStep, int totalSteps) {
     return Column(
       children: [
@@ -281,7 +245,7 @@ class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
                   right: index < totalSteps - 1 ? 4 : 0,
                 ),
                 decoration: BoxDecoration(
-                  color: isActive ? Colors.grey[600] : Colors.green[300],
+                  color: isActive ? Colors.grey[600] : Colors.grey[300],
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -292,7 +256,3 @@ class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
     );
   }
 }
-
-
-
-

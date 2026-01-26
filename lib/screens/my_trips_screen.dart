@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'age_input_screen.dart';
 import '../services/auth_service.dart';
+import '../l10n/generated/app_localizations.dart';
 
 class MyTripsScreen extends StatefulWidget {
   final VoidCallback? onNavigateToHome;
@@ -32,21 +33,24 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.only(left: 8.0),
           child: IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.arrow_back_ios,
-              color: Colors.black,
+              color: theme.iconTheme.color,
               size: 20,
             ),
             onPressed: () {
-              // Navigate back to homepage
               if (widget.onNavigateToHome != null) {
                 widget.onNavigateToHome!();
               } else {
@@ -57,11 +61,11 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
         ),
         centerTitle: true,
         title: Text(
-          'Personalise My Trips',
+          l10n.personaliseMyTrips,
           style: GoogleFonts.montserrat(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: Colors.black,
+            color: theme.textTheme.titleLarge?.color,
           ),
         ),
       ),
@@ -74,29 +78,26 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
               const SizedBox(height: 20),
               // Welcome message
               Text(
-                "Welcome Onboards, $_userName!",
+                l10n.welcomeUser(_userName),
                 style: GoogleFonts.poppins(
                   fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                  color: theme.textTheme.bodyLarge?.color,
                 ),
               ),
               const SizedBox(height: 16),
               // Main heading
               Text(
-                "Let's start your Umrah journey with us",
+                l10n.letsStartJourney,
                 style: GoogleFonts.poppins(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black,
+                  color: theme.textTheme.titleLarge?.color,
                 ),
               ),
               const SizedBox(height: 40),
-              // Travelling by Own card
-              _buildTripOptionCard(
-                context: context,
-                title: "Are you travelling by own?",
-                description: "Personalised all your budgets and planning by yourself.",
+              // DIY Travel Plan Card
+              GestureDetector(
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -104,46 +105,79 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                     ),
                   );
                 },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF2C2C2C) : const Color(0xFFF5F5F5),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.diyTravelPlan,
+                              style: GoogleFonts.poppins(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w600,
+                                color: theme.textTheme.titleLarge?.color,
+                                height: 1.2,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              l10n.personalisedBudgets,
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w400,
+                                color: theme.textTheme.bodyMedium?.color,
+                                height: 1.4,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        color: theme.iconTheme.color,
+                        size: 24,
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              const SizedBox(height: 16),
-              // Travelling by Group card
-              _buildTripOptionCard(
-                context: context,
-                title: "Are you travelling by group?",
-                description: "Personalised all the budgets and planning by a group of people.",
-                onTap: () {
-                  // Handle navigation to group trip planning
-                  // You can add navigation logic here
-                },
-              ),
+              
               const Spacer(),
               // Skip button
               Padding(
                 padding: const EdgeInsets.only(bottom: 20),
                 child: SizedBox(
                   width: double.infinity,
-                  child: TextButton(
+                  child: ElevatedButton(
                     onPressed: () {
-                      // Navigate back to homepage
                       if (widget.onNavigateToHome != null) {
                         widget.onNavigateToHome!();
                       } else {
                         Navigator.of(context).pop();
                       }
                     },
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.grey[200],
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF64D2FF), // Cyan/Blue color from design
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(30),
                       ),
+                      elevation: 0,
                     ),
                     child: Text(
-                      'Skip for now',
+                      l10n.skipForNow,
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
-                        color: Colors.black87,
+                        color: Colors.black, // Keep black for contrast on cyan button
                       ),
                     ),
                   ),
@@ -151,65 +185,6 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTripOptionCard({
-    required BuildContext context,
-    required String title,
-    required String description,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    description,
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.black87,
-                      height: 1.4,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 16),
-            Padding(
-              padding: const EdgeInsets.only(top: 2),
-              child: const Icon(
-                Icons.arrow_forward_ios,
-                color: Colors.black87,
-                size: 18,
-              ),
-            ),
-          ],
         ),
       ),
     );

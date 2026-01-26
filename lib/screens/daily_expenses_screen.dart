@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'results_screen.dart';
+import '../l10n/generated/app_localizations.dart';
 
 class DailyExpensesScreen extends StatefulWidget {
   final String tripName;
   final int age;
   final double budget;
   final int duration;
+  final int daysMakkah;
+  final int daysMadinah;
   final String hotelPreference;
   final String hotelDistance;
   final String roomType;
   final String flightPreference;
+  final String serviceTypePreference;
+  final String transportPreference;
 
   const DailyExpensesScreen({
     super.key,
@@ -18,10 +23,14 @@ class DailyExpensesScreen extends StatefulWidget {
     required this.age,
     required this.budget,
     required this.duration,
+    required this.daysMakkah,
+    required this.daysMadinah,
     required this.hotelPreference,
     required this.hotelDistance,
     required this.roomType,
     required this.flightPreference,
+    required this.serviceTypePreference,
+    required this.transportPreference,
   });
 
   @override
@@ -35,19 +44,21 @@ class _DailyExpensesScreenState extends State<DailyExpensesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final bool canProceed = _dailyExpensesPreference != null;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.only(left: 8.0),
           child: IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.arrow_back_ios,
-              color: Colors.black,
+              color: theme.iconTheme.color,
               size: 20,
             ),
             onPressed: () {
@@ -57,11 +68,11 @@ class _DailyExpensesScreenState extends State<DailyExpensesScreen> {
         ),
         centerTitle: true,
         title: Text(
-          'Personalise My Trips',
+          l10n.personaliseMyTrips,
           style: GoogleFonts.montserrat(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: Colors.black,
+            color: theme.textTheme.titleLarge?.color,
           ),
         ),
       ),
@@ -73,15 +84,15 @@ class _DailyExpensesScreenState extends State<DailyExpensesScreen> {
             children: [
               const SizedBox(height: 16),
               // Progress bar
-              _buildProgressBar(6, 8),
+              _buildProgressBar(7, 8),
               const SizedBox(height: 32),
               // Main heading
               Text(
-                "Let's start your Umrah journey with us",
+                l10n.letsStartJourney,
                 style: GoogleFonts.montserrat(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black,
+                  color: theme.textTheme.titleLarge?.color,
                 ),
               ),
               const SizedBox(height: 16),
@@ -94,11 +105,11 @@ class _DailyExpensesScreenState extends State<DailyExpensesScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Choose your daily expenses preferences",
+                          l10n.dailyExpensesPrefTitle,
                           style: GoogleFonts.montserrat(
                             fontSize: 24,
                             fontWeight: FontWeight.w700,
-                            color: Colors.black,
+                            color: theme.textTheme.titleLarge?.color,
                           ),
                         ),
                       ],
@@ -115,8 +126,8 @@ class _DailyExpensesScreenState extends State<DailyExpensesScreen> {
               const SizedBox(height: 32),
               // Daily expenses preference dropdown
               _buildDropdownField(
-                label: 'Daily expenses preference',
-                hintText: 'Pick your expenses preferences',
+                label: l10n.dailyExpensesPrefLabel,
+                hintText: l10n.pickDailyExpensesPref,
                 value: _dailyExpensesPreference,
                 items: _dailyExpensesOptions,
                 onChanged: (value) {
@@ -141,10 +152,14 @@ class _DailyExpensesScreenState extends State<DailyExpensesScreen> {
                                   age: widget.age,
                                   budget: widget.budget,
                                   duration: widget.duration,
+                                  daysMakkah: widget.daysMakkah,
+                                  daysMadinah: widget.daysMadinah,
                                   hotelPreference: widget.hotelPreference,
                                   hotelDistance: widget.hotelDistance,
                                   roomType: widget.roomType,
                                   flightPreference: widget.flightPreference,
+                                  serviceTypePreference: widget.serviceTypePreference,
+                                  transportPreference: widget.transportPreference,
                                   dailyExpensesPreference: _dailyExpensesPreference!,
                                 ),
                               ),
@@ -153,20 +168,20 @@ class _DailyExpensesScreenState extends State<DailyExpensesScreen> {
                         : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: canProceed
-                          ? const Color(0xFFB3E5FC)
-                          : Colors.grey[300],
+                          ? const Color(0xFF64D2FF)
+                          : theme.disabledColor,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(30),
                       ),
                       elevation: 0,
                     ),
                     child: Text(
-                      'Proceed',
+                      l10n.proceed,
                       style: GoogleFonts.montserrat(
                         fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                        color: canProceed ? Colors.black87 : Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                        color: canProceed ? Colors.black87 : theme.disabledColor.withOpacity(0.5),
                       ),
                     ),
                   ),
@@ -186,6 +201,7 @@ class _DailyExpensesScreenState extends State<DailyExpensesScreen> {
     required List<String> items,
     required ValueChanged<String?> onChanged,
   }) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -194,7 +210,7 @@ class _DailyExpensesScreenState extends State<DailyExpensesScreen> {
           style: GoogleFonts.montserrat(
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: Colors.black87,
+            color: theme.textTheme.bodyLarge?.color,
           ),
         ),
         const SizedBox(height: 8),
@@ -202,7 +218,7 @@ class _DailyExpensesScreenState extends State<DailyExpensesScreen> {
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: Colors.grey[300]!,
+                color: theme.dividerColor,
                 width: 1,
               ),
             ),
@@ -210,18 +226,19 @@ class _DailyExpensesScreenState extends State<DailyExpensesScreen> {
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: value,
+              dropdownColor: theme.canvasColor,
               hint: Text(
                 hintText,
                 style: GoogleFonts.montserrat(
                   fontSize: 16,
                   fontWeight: FontWeight.w400,
-                  color: Colors.grey[400],
+                  color: theme.hintColor,
                 ),
               ),
               isExpanded: true,
-              icon: const Icon(
+              icon: Icon(
                 Icons.keyboard_arrow_down,
-                color: Colors.black87,
+                color: theme.iconTheme.color,
               ),
               items: items.map((String item) {
                 return DropdownMenuItem<String>(
@@ -231,7 +248,7 @@ class _DailyExpensesScreenState extends State<DailyExpensesScreen> {
                     style: GoogleFonts.montserrat(
                       fontSize: 16,
                       fontWeight: FontWeight.w400,
-                      color: Colors.black87,
+                      color: theme.textTheme.bodyLarge?.color,
                     ),
                   ),
                 );

@@ -4,6 +4,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'main_navigation.dart';
+import '../l10n/generated/app_localizations.dart';
 
 class PersonalisationConfirmationScreen extends StatefulWidget {
   final String tripName;
@@ -13,8 +14,11 @@ class PersonalisationConfirmationScreen extends StatefulWidget {
   final String hotelPreference;
   final String hotelDistance;
   final String roomType;
+  final String transportPreference;
   final String flightPreference;
+  final String serviceTypePreference;
   final String dailyExpensesPreference;
+  final Map<String, dynamic> optimizationResult;
 
   const PersonalisationConfirmationScreen({
     super.key,
@@ -25,8 +29,11 @@ class PersonalisationConfirmationScreen extends StatefulWidget {
     required this.hotelPreference,
     required this.hotelDistance,
     required this.roomType,
+    required this.transportPreference,
     required this.flightPreference,
+    required this.serviceTypePreference,
     required this.dailyExpensesPreference,
+    required this.optimizationResult,
   });
 
   @override
@@ -68,7 +75,9 @@ class _PersonalisationConfirmationScreenState extends State<PersonalisationConfi
               trip['hotelPreference'] == widget.hotelPreference &&
               trip['hotelDistance'] == widget.hotelDistance &&
               trip['roomType'] == widget.roomType &&
+              trip['transportPreference'] == widget.transportPreference &&
               trip['flightPreference'] == widget.flightPreference &&
+              trip['serviceTypePreference'] == widget.serviceTypePreference &&
               trip['dailyExpensesPreference'] == widget.dailyExpensesPreference) {
             tripExists = true;
             existingCreatedAt = trip['createdAt'] as String;
@@ -123,7 +132,9 @@ class _PersonalisationConfirmationScreenState extends State<PersonalisationConfi
             trip['hotelPreference'] == widget.hotelPreference &&
             trip['hotelDistance'] == widget.hotelDistance &&
             trip['roomType'] == widget.roomType &&
+            trip['transportPreference'] == widget.transportPreference &&
             trip['flightPreference'] == widget.flightPreference &&
+            trip['serviceTypePreference'] == widget.serviceTypePreference &&
             trip['dailyExpensesPreference'] == widget.dailyExpensesPreference) {
           found = true;
           existingCreatedAt = trip['createdAt'] as String;
@@ -150,13 +161,17 @@ class _PersonalisationConfirmationScreenState extends State<PersonalisationConfi
       'hotelPreference': widget.hotelPreference,
       'hotelDistance': widget.hotelDistance,
       'roomType': widget.roomType,
+      'transportPreference': widget.transportPreference,
       'flightPreference': widget.flightPreference,
+      'serviceTypePreference': widget.serviceTypePreference,
       'dailyExpensesPreference': widget.dailyExpensesPreference,
+      'optimizationResult': widget.optimizationResult,
       'createdAt': _tripCreatedAt ?? DateTime.now().toIso8601String(),
     };
   }
 
   Future<void> _saveTrip() async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       // Check if trip already exists by comparing age, budget, and duration
       final prefs = await SharedPreferences.getInstance();
@@ -175,7 +190,9 @@ class _PersonalisationConfirmationScreenState extends State<PersonalisationConfi
               trip['hotelPreference'] == widget.hotelPreference &&
               trip['hotelDistance'] == widget.hotelDistance &&
               trip['roomType'] == widget.roomType &&
+              trip['transportPreference'] == widget.transportPreference &&
               trip['flightPreference'] == widget.flightPreference &&
+              trip['serviceTypePreference'] == widget.serviceTypePreference &&
               trip['dailyExpensesPreference'] == widget.dailyExpensesPreference) {
             tripExists = true;
             existingCreatedAt = trip['createdAt'] as String;
@@ -206,7 +223,7 @@ class _PersonalisationConfirmationScreenState extends State<PersonalisationConfi
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'Trip saved successfully!',
+                l10n.tripSavedSuccess,
                 style: GoogleFonts.poppins(),
               ),
               backgroundColor: Colors.green,
@@ -225,7 +242,7 @@ class _PersonalisationConfirmationScreenState extends State<PersonalisationConfi
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'Trip already saved!',
+                l10n.tripAlreadySaved,
                 style: GoogleFonts.poppins(),
               ),
               backgroundColor: Colors.orange,
@@ -239,7 +256,7 @@ class _PersonalisationConfirmationScreenState extends State<PersonalisationConfi
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Error saving trip: $e',
+              l10n.errorSavingTrip(e.toString()),
               style: GoogleFonts.poppins(),
             ),
             backgroundColor: Colors.red,
@@ -251,6 +268,7 @@ class _PersonalisationConfirmationScreenState extends State<PersonalisationConfi
   }
 
   Future<void> _shareTrip() async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       // Save trip data first
       await _saveTrip();
@@ -264,8 +282,9 @@ Age: ${widget.age} years old
 Budget: RM $budgetFormatted
 Duration: ${widget.duration} ${widget.duration == 1 ? 'day' : 'days'}
 
-Hotel: ${widget.hotelPreference} - ${widget.hotelDistance} - ${widget.roomType}
-Flight: ${widget.flightPreference}
+Hotel: ${widget.hotelPreference} - ${widget.hotelDistance}
+Transport: ${widget.transportPreference}
+Flight: ${widget.flightPreference} (${widget.serviceTypePreference})
 Daily Expenses: ${widget.dailyExpensesPreference}
 
 Created with Umrah Trip Planner
@@ -281,7 +300,7 @@ Created with Umrah Trip Planner
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Error sharing trip: $e',
+              l10n.errorSharingTrip(e.toString()),
               style: GoogleFonts.poppins(),
             ),
             backgroundColor: Colors.red,
@@ -304,17 +323,21 @@ Created with Umrah Trip Planner
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.only(left: 8.0),
           child: IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.arrow_back_ios,
-              color: Colors.black,
+              color: theme.iconTheme.color,
               size: 20,
             ),
             onPressed: () {
@@ -324,18 +347,18 @@ Created with Umrah Trip Planner
         ),
         centerTitle: true,
         title: Text(
-          'Personalise My Trips',
+          l10n.personaliseMyTrips,
           style: GoogleFonts.montserrat(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: Colors.black,
+            color: theme.textTheme.titleLarge?.color,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.share,
-              color: Colors.black,
+              color: theme.iconTheme.color,
               size: 22,
             ),
             onPressed: _shareTrip,
@@ -353,37 +376,37 @@ Created with Umrah Trip Planner
               Container(
                 width: 80,
                 height: 80,
-                decoration: const BoxDecoration(
-                  color: Colors.black,
+                decoration: BoxDecoration(
+                  color: isDark ? theme.colorScheme.primary : Colors.black,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.check,
-                  color: Colors.white,
+                  color: isDark ? Colors.black : Colors.white,
                   size: 50,
                 ),
               ),
               const SizedBox(height: 32),
               // Congratulatory message
               Text(
-                'Congrats! You have\npersonalised Umrah trips\nonboards!',
+                l10n.congratsTitle,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black,
+                  color: theme.textTheme.titleLarge?.color,
                   height: 1.4,
                 ),
               ),
               const SizedBox(height: 16),
               // Description text
               Text(
-                'Now you can have a wonderful Umrah\njourney insights.',
+                l10n.congratsSubtitle,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w400,
-                  color: Colors.black87,
+                  color: theme.textTheme.bodyLarge?.color,
                   height: 1.5,
                 ),
               ),
@@ -399,7 +422,7 @@ Created with Umrah Trip Planner
                       child: ElevatedButton(
                         onPressed: _navigateToSavedTrips,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey[200],
+                          backgroundColor: isDark ? Colors.grey[800] : Colors.grey[200],
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -407,11 +430,11 @@ Created with Umrah Trip Planner
                           elevation: 0,
                         ),
                         child: Text(
-                          'Go to saved trips',
+                          l10n.goToSavedTrips,
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
-                            color: Colors.black87,
+                            color: isDark ? Colors.white : Colors.black87,
                           ),
                         ),
                       ),
@@ -431,15 +454,15 @@ Created with Umrah Trip Planner
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFB3E5FC),
+                          backgroundColor: const Color(0xFF64D2FF), // Cyan
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(30),
                           ),
                           elevation: 0,
                         ),
                         child: Text(
-                          'Done',
+                          l10n.done,
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,

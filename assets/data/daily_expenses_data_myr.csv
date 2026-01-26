@@ -1,0 +1,10 @@
+Expense_Category,Budget_Type,Estimated_Daily_Cost_MYR
+Daily Meal,Low,62.5
+Daily Meal,Medium,125.0
+Daily Meal,High,250.0
+E-sim/Data,Low,6.25
+E-sim/Data,Medium,12.5
+E-sim/Data,High,25.0
+Other Expenses,Low,25.0
+Other Expenses,Medium,62.5
+Other Expenses,High,125.0

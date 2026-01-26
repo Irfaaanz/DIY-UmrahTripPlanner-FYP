@@ -6,8 +6,22 @@ import 'screens/sign_in_screen.dart';
 import 'services/auth_service.dart';
 import 'providers/theme_provider.dart';
 import 'providers/language_provider.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'l10n/generated/app_localizations.dart';
 
-void main() {
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    // Ignore duplicate app initialization error
+    print('Firebase initialization error (ignored check): $e');
+  }
   runApp(const UmrahPlannerApp());
 }
 
@@ -28,6 +42,17 @@ class UmrahPlannerApp extends StatelessWidget {
             theme: _buildLightTheme(),
             darkTheme: _buildDarkTheme(),
             themeMode: themeProvider.themeMode,
+            locale: Locale(languageProvider.languageCode),
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('en'), // English
+              Locale('ms'), // Malay
+            ],
             home: const AuthWrapper(),
             debugShowCheckedModeBanner: false,
           );
