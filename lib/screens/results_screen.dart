@@ -46,6 +46,42 @@ class _ResultsScreenState extends State<ResultsScreen> {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     
+    // Mappings for display
+    final Map<String, String> hotelPrefDisplay = {
+      'Luxury': l10n.luxury,
+      'Premium': l10n.premium,
+      'Standard': l10n.standard,
+      'Economy': l10n.economy,
+    };
+
+    final Map<String, String> hotelDistDisplay = {
+      'Very Near': l10n.veryNear,
+      'Near': l10n.near,
+      'Far': l10n.far,
+    };
+
+    final Map<String, String> flightPrefDisplay = {
+      'Direct': l10n.direct,
+      'Transit': l10n.transit,
+    };
+
+    final Map<String, String> serviceTypeDisplay = {
+      'Full Service': l10n.fullService,
+      'Low Cost': l10n.lowCost,
+    };
+
+    final Map<String, String> transportPrefDisplay = {
+      'Comfortable': l10n.comfortable,
+      'Moderate': l10n.moderate,
+      'Minimal': l10n.minimal,
+    };
+
+    final Map<String, String> dailyExpensesDisplay = {
+      'Comfortable': l10n.comfortable,
+      'Moderate': l10n.moderate,
+      'Minimal': l10n.minimal,
+    };
+    
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
@@ -109,8 +145,8 @@ class _ResultsScreenState extends State<ResultsScreen> {
               _buildSection(
                 title: l10n.hotelPref,
                 children: [
-                  _buildInfoRow(l10n.hotelPref, widget.hotelPreference),
-                  _buildInfoRow(l10n.hotelDistanceLabel, widget.hotelDistance),
+                  _buildInfoRow(l10n.hotelPref, hotelPrefDisplay[widget.hotelPreference] ?? widget.hotelPreference),
+                  _buildInfoRow(l10n.hotelDistanceLabel, hotelDistDisplay[widget.hotelDistance] ?? widget.hotelDistance),
                 ],
               ),
               const SizedBox(height: 24),
@@ -118,9 +154,9 @@ class _ResultsScreenState extends State<ResultsScreen> {
               _buildSection(
                 title: l10n.transportPref, // Or create new string if slightly different, but re-using is fine or "Transport & Flight"
                 children: [
-                  _buildInfoRow(l10n.transportPref, widget.transportPreference),
-                  _buildInfoRow(l10n.flightPref, widget.flightPreference),
-                  _buildInfoRow(l10n.airlineServiceType, widget.serviceTypePreference),
+                  _buildInfoRow(l10n.transportPref, transportPrefDisplay[widget.transportPreference] ?? widget.transportPreference),
+                  _buildInfoRow(l10n.flightPref, flightPrefDisplay[widget.flightPreference] ?? widget.flightPreference),
+                  _buildInfoRow(l10n.airlineServiceType, serviceTypeDisplay[widget.serviceTypePreference] ?? widget.serviceTypePreference),
                 ],
               ),
               const SizedBox(height: 24),
@@ -128,7 +164,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
               _buildSection(
                 title: l10n.dailyExpenses,
                 children: [
-                  _buildInfoRow(l10n.dailyExpensesPrefLabel, widget.dailyExpensesPreference),
+                  _buildInfoRow(l10n.dailyExpensesPrefLabel, dailyExpensesDisplay[widget.dailyExpensesPreference] ?? widget.dailyExpensesPreference),
                 ],
               ),
               const SizedBox(height: 32),

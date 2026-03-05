@@ -43,21 +43,35 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
     }
   }
 
+  String? _encodeQueryParameters(Map<String, String> params) {
+    return params.entries
+        .map((MapEntry<String, String> e) =>
+            '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+        .join('&');
+  }
+
   Future<bool> _sendEmail() async {
     try {
-      final email = 'fanzr24@gmail.com';
-      final subject = Uri.encodeComponent('Inquiry from DIY Umrah Trip Planner App');
-      final body = Uri.encodeComponent(
-        'User Email: ${_emailController.text}\n\n'
-        'Enquiry:\n${_enquiryController.text}',
+      final Uri emailLaunchUri = Uri(
+        scheme: 'mailto',
+        path: 'fanzr24@gmail.com',
+        query: _encodeQueryParameters(<String, String>{
+          'subject': 'Inquiry from DIY Umrah Trip Planner App',
+          'body': 'User Email: ${_emailController.text}\n\nEnquiry:\n${_enquiryController.text}',
+        }),
       );
-      final uri = Uri.parse('mailto:$email?subject=$subject&body=$body');
       
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri);
+      if (await canLaunchUrl(emailLaunchUri)) {
+        await launchUrl(emailLaunchUri);
         return true;
       } else {
-        return false;
+        // Fallback: try launching without checking canLaunchUrl (sometimes works on some devices even if check fails)
+        try {
+          await launchUrl(emailLaunchUri);
+          return true;
+        } catch (e) {
+          return false;
+        }
       }
     } catch (e) {
       return false;

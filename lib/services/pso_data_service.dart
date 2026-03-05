@@ -123,11 +123,11 @@ class PsoDataService {
     
     return _flightsData.skip(1).map((row) {
       return {
-        'airline': row[4],
+        'airline': row[4].toString().trim(),
         'price': double.tryParse(row[5].toString()) ?? 0.0,
-        'type': row[8].toString() == '0' ? 'Direct' : 'Transit', // Assuming stops=0 is direct
-        'Airline Name': row.length > 10 ? row[10] : 'Unknown',
-        'service_type': row.length > 11 ? row[11] : 'non-LCC', // Default if missing
+        'type': row[8].toString().trim() == '0' ? 'Direct' : 'Transit', // Assuming stops=0 is direct
+        'Airline Name': row.length > 10 ? row[10].toString().trim() : 'Unknown',
+        'service_type': row.length > 11 ? row[11].toString().trim() : 'non-LCC', // Default if missing
       };
     }).toList();
   }
@@ -167,9 +167,15 @@ class PsoDataService {
       // Clean price string "MYR 991.89" -> 991.89
       double price = 0.0;
       try {
-        String priceStr = row[4].toString().replaceAll('MYR', '').replaceAll(',', '').trim();
+        String priceStr = row[4].toString()
+            .toUpperCase()
+            .replaceAll('MYR', '')
+            .replaceAll('RM', '')
+            .replaceAll(',', '')
+            .trim();
         price = double.parse(priceStr);
       } catch (e) {
+        print("Error parsing price for hotel ${row[1]}: ${e}");
         price = 0.0;
       }
 

@@ -177,6 +177,10 @@ class _OptimizedBudgetResultScreenState extends State<OptimizedBudgetResultScree
     final flightCost = double.tryParse(flight['price'].toString()) ?? 0.0;
     
     final makkahRate = double.tryParse(hotelMakkah['price'].toString()) ?? 0.0;
+    
+    // DEBUG LOG
+    debugPrint("DEBUGUI: Makkah Hotel: ${hotelMakkah['name']}, Raw Price Obj: ${hotelMakkah['price']}, Parsed Rate: $makkahRate, Days: ${widget.daysMakkah}");
+    
     final makkahCost = makkahRate * widget.daysMakkah;
     
     final madinahRate = double.tryParse(hotelMadinah['price'].toString()) ?? 0.0;
@@ -198,6 +202,18 @@ class _OptimizedBudgetResultScreenState extends State<OptimizedBudgetResultScree
     // Expenses
     final dailyRate = PsoDataService().getDailyExpenses(expenseType);
     final expenseCost = dailyRate * widget.duration;
+
+    final Map<String, String> transportDisplay = {
+      'Minimal': l10n.minimal,
+      'Moderate': l10n.moderate,
+      'Comfortable': l10n.comfortable,
+    };
+    
+    final Map<String, String> expenseDisplay = {
+      'Low': l10n.minimal,
+      'Medium': l10n.moderate,
+      'High': l10n.comfortable,
+    };
 
 
     return Scaffold(
@@ -257,23 +273,25 @@ class _OptimizedBudgetResultScreenState extends State<OptimizedBudgetResultScree
                 ),
               ),
               const SizedBox(height: 16),
-              // Savings Badge
+              // Savings/Over Budget Badge
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF96D88E), // Greenish color from image, maybe too bright for dark mode?
-                  // For dark mode, maybe darken it? Or keep it as an accent. 
-                  // It's a badge, so keeping it bright might be fine if text is black.
+                  color: savings > 0 
+                      ? const Color(0xFF96D88E) 
+                      : (isOverBudget ? const Color(0xFFE57373) : const Color(0xFF96D88E)), // Red if over budget
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: Text(
                   savings > 0 
                       ? "${l10n.savings}: RM ${savings.toStringAsFixed(2)}"
-                      : (isOverBudget ? l10n.overBudget : l10n.bestPossiblePrice),
+                      : (isOverBudget 
+                          ? "${l10n.overBudget}: RM ${savings.abs().toStringAsFixed(2)}" 
+                          : l10n.bestPossiblePrice),
                   style: GoogleFonts.montserrat(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black87, // Keep black on green
+                    color: Colors.black87,
                   ),
                 ),
               ),
@@ -287,10 +305,9 @@ class _OptimizedBudgetResultScreenState extends State<OptimizedBudgetResultScree
                   children: [
                     _buildDetailRow(l10n.hotelNameMakkah, "${hotelMakkah['name']} (${widget.daysMakkah} ${l10n.days})"),
                     _buildDetailRow(l10n.hotelNameMadinah, "${hotelMadinah['name']} (${widget.daysMadinah} ${l10n.days})"),
-                    _buildDetailRow(l10n.hotelNameMadinah, "${hotelMadinah['name']} (${widget.daysMadinah} ${l10n.days})"),
                     _buildDetailRow(l10n.hotelRatings, _getStarRating(context, int.tryParse(hotelMakkah['rating'].toString()) ?? 0)), 
-                    _buildDetailRow(l10n.hotelDistanceLabel, hotelMakkah['distance'].toString()), 
-                    _buildDetailRow(l10n.hotelDistanceLabel, hotelMakkah['distance'].toString()), 
+                    _buildDetailRow("${l10n.hotelDistanceLabel} (Makkah)", hotelMakkah['distance'].toString()), 
+                    _buildDetailRow("${l10n.hotelDistanceLabel} (Madinah)", hotelMadinah['distance'].toString()), 
                     _buildDetailRow(l10n.totalDaysStay, "${widget.duration} ${l10n.days}"),
                     _buildDetailRow(l10n.cost, "RM ${(makkahCost + madinahCost).toStringAsFixed(2)}"),
                   ],
@@ -316,7 +333,7 @@ class _OptimizedBudgetResultScreenState extends State<OptimizedBudgetResultScree
                 content: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildDetailRow(l10n.transportType, transportType),
+                    _buildDetailRow(l10n.transportType, transportDisplay[transportType] ?? transportType),
                     _buildDetailRow(l10n.fixedTransportCost, "RM $totalFixedTransport"),
                     _buildDetailRow(l10n.dailyCommute, "RM $totalDailyTransport"),
                     _buildDetailRow(l10n.totalCost, "RM ${transportCost.toStringAsFixed(0)}"),
@@ -330,7 +347,7 @@ class _OptimizedBudgetResultScreenState extends State<OptimizedBudgetResultScree
                 content: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildDetailRow(l10n.tier, expenseType),
+                    _buildDetailRow(l10n.tier, expenseDisplay[expenseType] ?? expenseType),
                     _buildDetailRow(l10n.dailyCost, "RM $dailyRate/day"),
                     _buildDetailRow(l10n.totalDaysLabel, "${widget.duration} ${l10n.days}"),
                     _buildDetailRow(l10n.total, "RM ${expenseCost.toStringAsFixed(0)}"),

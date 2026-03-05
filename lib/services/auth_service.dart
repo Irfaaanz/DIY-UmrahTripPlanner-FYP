@@ -81,6 +81,33 @@ class AuthService {
       print('Sign Out Error: $e');
     }
   }
+  // Update password
+  static Future<bool> updatePassword(String newPassword) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await user.updatePassword(newPassword);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print('Update Password Error: $e');
+      return false;
+    }
+  }
+
+  // Update display name
+  static Future<void> updateDisplayName(String displayName) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await user.updateDisplayName(displayName);
+        await user.reload();
+      }
+    } catch (e) {
+      print('Update Display Name Error: $e');
+    }
+  }
 }
 
 

@@ -674,4 +674,385 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get registrationFailed => 'Registration failed. Please try again.';
+
+  @override
+  String get masjidAlHaramDesc => 'The Grand Mosque, housing the Kaaba.';
+
+  @override
+  String get jabalAlNourDesc =>
+      'The mountain where the first revelation was received.';
+
+  @override
+  String get jabalThawrDesc =>
+      'The cave where Prophet Muhammad (PBUH) and Abu Bakr (RA) hid during migration.';
+
+  @override
+  String get jannatAlMuallaDesc =>
+      'The cemetery where Khadija (RA) and many ancestors of the Prophet are buried.';
+
+  @override
+  String get masjidAlJinnDesc =>
+      'A mosque marking where a group of Jinn accepted Islam.';
+
+  @override
+  String get masjidAishaDesc =>
+      'The nearest Miqat point for pilgrims in Makkah to renew Ihram.';
+
+  @override
+  String get mountArafatDesc =>
+      'The Mount of Mercy, essential for Hajj but visited during Ziyarat tours.';
+
+  @override
+  String get minaMuzdalifahDesc =>
+      'Key Hajj sites, often visited during Ziyarat tours.';
+
+  @override
+  String get birthplaceProphetDesc =>
+      'Located near the Marwah hills (now a library).';
+
+  @override
+  String get masjidAlRayyahDesc => 'Known as the Mosque of the Flag.';
+
+  @override
+  String get masjidAnNabawi => 'Masjid an-Nabawi';
+
+  @override
+  String get masjidAnNabawiDesc =>
+      'The Prophet\'s Mosque and his Rawdah (tomb).';
+
+  @override
+  String get masjidQuba => 'Masjid Quba';
+
+  @override
+  String get masjidQubaDesc =>
+      'The first mosque built in Islam; offering 2 rakat here equals the reward of an Umrah.';
+
+  @override
+  String get jannatAlBaqi => 'Jannat al-Baqi';
+
+  @override
+  String get jannatAlBaqiDesc =>
+      'The main cemetery housing thousands of companions and family of the Prophet.';
+
+  @override
+  String get mountUhud => 'Mount Uhud & Archers\' Hill';
+
+  @override
+  String get mountUhudDesc =>
+      'Site of the Battle of Uhud and the cemetery of the martyrs (including Hamza RA).';
+
+  @override
+  String get masjidAlQiblatain => 'Masjid Al-Qiblatain';
+
+  @override
+  String get masjidAlQiblatainDesc =>
+      'The mosque where the prayer direction changed from Jerusalem to Makkah.';
+
+  @override
+  String get sevenMosques => 'The Seven Mosques (Khandaq)';
+
+  @override
+  String get sevenMosquesDesc => 'Site of the Battle of the Trench.';
+
+  @override
+  String get masjidAlGhamamah => 'Masjid Al-Ghamamah';
+
+  @override
+  String get masjidAlGhamamahDesc =>
+      'Where the Prophet performed Eid and Rain prayers.';
+
+  @override
+  String get masjidAlJummah => 'Masjid Al-Jummah';
+
+  @override
+  String get masjidAlJummahDesc => 'Where the first Friday prayer was offered.';
+
+  @override
+  String get masjidBilal => 'Masjid Bilal';
+
+  @override
+  String get masjidBilalDesc =>
+      'Near the date market, named after Bilal ibn Rabah (RA).';
+
+  @override
+  String get ethiqWell => 'Ethiq Well (Garden of Salman Farsi)';
+
+  @override
+  String get ethiqWellDesc =>
+      'Associated with the story of Salman Farsi\'s freedom.';
+
+  @override
+  String get validPassport => 'Valid Passport';
+
+  @override
+  String get validPassportDesc => 'Must have 6 months validity.';
+
+  @override
+  String get umrahVisa => 'Umrah Visa';
+
+  @override
+  String get umrahVisaDesc =>
+      'Electronic visa or tourist visa (depending on nationality).';
+
+  @override
+  String get nusukApp => 'Nusuk App';
+
+  @override
+  String get nusukAppDesc => 'Installed and registered (for Rawdah permits).';
+
+  @override
+  String get vaccinations => 'Vaccinations';
+
+  @override
+  String get vaccinationsDesc =>
+      'Meningitis (mandatory), Influenza (recommended).';
+
+  @override
+  String get physicalStamina => 'Physical Stamina';
+
+  @override
+  String get physicalStaminaDesc =>
+      'Practice walking 5-10km daily before the trip.';
+
+  @override
+  String get ihramCloths => 'Ihram Cloths (Men)';
+
+  @override
+  String get ihramClothsDesc => '2 sets of white, unstitched towels.';
+
+  @override
+  String get ihramBelt => 'Ihram Belt (Men)';
+
+  @override
+  String get ihramBeltDesc =>
+      'To hold the lower garment and keep money/phone safe.';
+
+  @override
+  String get footwearMen => 'Footwear (Men)';
+
+  @override
+  String get footwearMenDesc =>
+      'Slippers/sandals that leave the ankles and metatarsals exposed.';
+
+  @override
+  String get toiletries => 'Unscented Toiletries';
+
+  @override
+  String get toiletriesDesc =>
+      'Soap, shampoo, deodorant (for use while in Ihram).';
+
+  @override
+  String get ihramClothingWomen => 'Ihram Clothing (Women)';
+
+  @override
+  String get ihramClothingWomenDesc =>
+      'Modest, loose-fitting abayas (any color, though white/black are common).';
+
+  @override
+  String get footwearWomen => 'Comfortable Footwear (Women)';
+
+  @override
+  String get footwearWomenDesc => 'Sneakers or soft walking shoes.';
+
+  @override
+  String get hairAccessories => 'Hair Accessories (Women)';
+
+  @override
+  String get hairAccessoriesDesc =>
+      'To manage hair under the hijab during rituals.';
+
+  @override
+  String get firstAidKit => 'First Aid Kit';
+
+  @override
+  String get firstAidKitDesc =>
+      'Painkillers, flu meds, oral rehydration salts, blister plasters.';
+
+  @override
+  String get prayerMat => 'Prayer Mat';
+
+  @override
+  String get prayerMatDesc => 'Lightweight travel version.';
+
+  @override
+  String get drawstringBag => 'Drawstring Bag';
+
+  @override
+  String get drawstringBagDesc => 'To carry shoes when entering the mosque.';
+
+  @override
+  String get travelAdapter => 'Universal Travel Adapter';
+
+  @override
+  String get travelAdapterDesc => 'Saudi Arabia uses Type G (British style).';
+
+  @override
+  String get makkahGuideTitle => 'Makkah: The Spiritual Core';
+
+  @override
+  String get catReligious => 'Religious & Historical Landmarks (Ziyarat)';
+
+  @override
+  String get masjidAlHaramActivity =>
+      'Activity: Perform Tawaf (circumambulation) and Sa’i; drink Zamzam water.';
+
+  @override
+  String get jabalAlNourActivity =>
+      'Activity: Hiking to the cave (approx. 45 min - 1 hour climb). Note: Best done before Fajr to avoid heat.';
+
+  @override
+  String get jabalThawrActivity => 'Activity: Hiking and viewing the cave.';
+
+  @override
+  String get mountArafatActivity =>
+      'Activity: Climbing the small hill where the Prophet delivered his Farewell Sermon; making dua.';
+
+  @override
+  String get jannatAlMuallaActivity =>
+      'Activity: Visiting the graves to pay respects.';
+
+  @override
+  String get catMuseums => 'Museums & Culture';
+
+  @override
+  String get hiraCulturalDistrict => 'Hira Cultural District';
+
+  @override
+  String get hiraCulturalDistrictDesc =>
+      'Located at the foot of Jabal Al-Nour.';
+
+  @override
+  String get hiraCulturalDistrictWhy =>
+      'Why visit: A modern museum utilizing 3D technology to explain the story of the revelation. It is much easier than climbing the mountain for those who are elderly.';
+
+  @override
+  String get exhibitionHolyMosques =>
+      'The Exhibition of the Two Holy Mosques Architecture';
+
+  @override
+  String get exhibitionHolyMosquesDesc =>
+      'Located in the Umm Al-Joud district.';
+
+  @override
+  String get exhibitionHolyMosquesWhy =>
+      'Why visit: Contains historical artifacts like the Old Teak Wooden Staircase of the Kaaba (from 1825) and old doors of the Masjid Al-Haram.';
+
+  @override
+  String get makkahClockTowerMuseum => 'Makkah Clock Tower Museum';
+
+  @override
+  String get makkahClockTowerMuseumDesc =>
+      'Located in the top floors of the Clock Tower.';
+
+  @override
+  String get makkahClockTowerMuseumWhy =>
+      'Why visit: Features an astronomy museum and the highest observation deck in Makkah for a panoramic view of the Haram.';
+
+  @override
+  String get kiswaFactory => 'The Kiswa Factory';
+
+  @override
+  String get kiswaFactoryActivity =>
+      'Activity: Watch artisans hand-embroider the gold threads onto the black silk cloth (Kiswa) that covers the Kaaba. Note: Usually requires a permit or group booking.';
+
+  @override
+  String get catLeisure => 'Leisure & Shopping Activities';
+
+  @override
+  String get makkahMall => 'Makkah Mall';
+
+  @override
+  String get makkahMallDesc => 'One of the largest modern malls in the city.';
+
+  @override
+  String get makkahMallActivity =>
+      'Activity: Shopping for international brands and dining.';
+
+  @override
+  String get binDawood => 'Bin Dawood Supermarkets';
+
+  @override
+  String get binDawoodActivity =>
+      'Activity: Buying local snacks, dates, and souvenirs (located inside the Clock Tower and near Haram).';
+
+  @override
+  String get eatAlbaik => 'Eat \"Albaik\"';
+
+  @override
+  String get eatAlbaikActivity =>
+      'Activity: Trying the famous Saudi fried chicken (a \"must-do\" ritual for almost every pilgrim).';
+
+  @override
+  String get madinahGuideTitle => 'Madinah: The City of Peace';
+
+  @override
+  String get masjidAnNabawiActivity =>
+      'Activity: Salam to the Prophet (PBUH) and his companions; Praying in the Rawdah (Garden of Paradise) – Requires a permit via the Nusuk App.';
+
+  @override
+  String get masjidQubaActivity =>
+      'Activity: Praying 2 Rakaat (Equivalent to the reward of an Umrah).';
+
+  @override
+  String get mountUhudActivity =>
+      'Activity: Climbing the small Archers\' Hill; visiting the Shuhada Cemetery (Graves of Hamza RA and other martyrs).';
+
+  @override
+  String get masjidAlQiblatainActivity =>
+      'Activity: Visiting the site where the prayer direction changed from Jerusalem to Makkah.';
+
+  @override
+  String get sevenMosquesActivity =>
+      'Activity: Visiting the small historical mosques (Masjid Fath, Masjid Salman Farsi, etc.).';
+
+  @override
+  String get jannatAlBaqiActivity =>
+      'Activity: Visiting the graves of thousands of Sahaba and family members of the Prophet. Note: Open briefly after Fajr and Asr prayers.';
+
+  @override
+  String get prophetBiographyMuseum =>
+      'International Fair and Museum of the Prophet\'s Biography';
+
+  @override
+  String get prophetBiographyMuseumDesc =>
+      'Located just outside the Prophet\'s Mosque (south side).';
+
+  @override
+  String get prophetBiographyMuseumWhy =>
+      'Why visit: Incredible modern displays and cinema screens detailing the life of the Prophet (Seerah) and a model of his house. Highly recommended.';
+
+  @override
+  String get hejazRailwayMuseum => 'Hejaz Railway Museum';
+
+  @override
+  String get hejazRailwayMuseumWhy =>
+      'Why visit: An old Ottoman railway station converted into a museum showing the history of the train line that once connected Damascus to Madinah.';
+
+  @override
+  String get darAlMadinahMuseum => 'Dar Al Madinah Museum';
+
+  @override
+  String get darAlMadinahMuseumWhy =>
+      'Why visit: Focuses specifically on the architectural history and expansion of Madinah city over the centuries.';
+
+  @override
+  String get catLeisureNature => 'Leisure & Nature Activities';
+
+  @override
+  String get madinahDatesMarket => 'Madinah Dates Market (Souq Al Tumour)';
+
+  @override
+  String get madinahDatesMarketActivity =>
+      'Activity: Tasting and buying Ajwa dates (and many other varieties) to take home.';
+
+  @override
+  String get ethiqWellActivity =>
+      'Activity: Visiting the garden associated with the freeing of Salman Farsi; enjoying tea under the date palms.';
+
+  @override
+  String get madinahHopOnBus => 'Madinah Hop-On Hop-Off Bus';
+
+  @override
+  String get madinahHopOnBusActivity =>
+      'Activity: A double-decker bus tour that loops around all the major historical sites (great for DIY travelers).';
 }

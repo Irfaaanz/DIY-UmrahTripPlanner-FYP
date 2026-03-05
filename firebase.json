@@ -1,1 +1,58 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"diy-umrah-fyp","appId":"1:1013746791690:android:6453b5ebbc8db96d0d36f3","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"diy-umrah-fyp","appId":"1:1013746791690:ios:503ce0192319c7d50d36f3","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"macos":{"default":{"projectId":"diy-umrah-fyp","appId":"1:1013746791690:ios:766ed0ac7c6350430d36f3","uploadDebugSymbols":false,"fileOutput":"macos/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"diy-umrah-fyp","configurations":{"android":"1:1013746791690:android:6453b5ebbc8db96d0d36f3","ios":"1:1013746791690:ios:503ce0192319c7d50d36f3","macos":"1:1013746791690:ios:766ed0ac7c6350430d36f3","web":"1:1013746791690:web:653df3fff0e6b9f10d36f3","windows":"1:1013746791690:web:e242e8e56de72c630d36f3"}}}}}}
+{
+    "firestore": {
+        "rules": "firestore.rules"
+    },
+    "hosting": {
+        "public": "build/web",
+        "ignore": [
+            "firebase.json",
+            "**/.*",
+            "**/node_modules/**"
+        ],
+        "rewrites": [
+            {
+                "source": "**",
+                "destination": "/index.html"
+            }
+        ]
+    },
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "diy-umrah-fyp",
+                    "appId": "1:1013746791690:android:6453b5ebbc8db96d0d36f3",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "ios": {
+                "default": {
+                    "projectId": "diy-umrah-fyp",
+                    "appId": "1:1013746791690:ios:503ce0192319c7d50d36f3",
+                    "uploadDebugSymbols": false,
+                    "fileOutput": "ios/Runner/GoogleService-Info.plist"
+                }
+            },
+            "macos": {
+                "default": {
+                    "projectId": "diy-umrah-fyp",
+                    "appId": "1:1013746791690:ios:766ed0ac7c6350430d36f3",
+                    "uploadDebugSymbols": false,
+                    "fileOutput": "macos/Runner/GoogleService-Info.plist"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": "diy-umrah-fyp",
+                    "configurations": {
+                        "android": "1:1013746791690:android:6453b5ebbc8db96d0d36f3",
+                        "ios": "1:1013746791690:ios:503ce0192319c7d50d36f3",
+                        "macos": "1:1013746791690:ios:766ed0ac7c6350430d36f3",
+                        "web": "1:1013746791690:web:653df3fff0e6b9f10d36f3",
+                        "windows": "1:1013746791690:web:e242e8e56de72c630d36f3"
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1375,6 +1375,660 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Registration failed. Please try again.'**
   String get registrationFailed;
+
+  /// No description provided for @masjidAlHaramDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'The Grand Mosque, housing the Kaaba.'**
+  String get masjidAlHaramDesc;
+
+  /// No description provided for @jabalAlNourDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'The mountain where the first revelation was received.'**
+  String get jabalAlNourDesc;
+
+  /// No description provided for @jabalThawrDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'The cave where Prophet Muhammad (PBUH) and Abu Bakr (RA) hid during migration.'**
+  String get jabalThawrDesc;
+
+  /// No description provided for @jannatAlMuallaDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'The cemetery where Khadija (RA) and many ancestors of the Prophet are buried.'**
+  String get jannatAlMuallaDesc;
+
+  /// No description provided for @masjidAlJinnDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'A mosque marking where a group of Jinn accepted Islam.'**
+  String get masjidAlJinnDesc;
+
+  /// No description provided for @masjidAishaDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'The nearest Miqat point for pilgrims in Makkah to renew Ihram.'**
+  String get masjidAishaDesc;
+
+  /// No description provided for @mountArafatDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'The Mount of Mercy, essential for Hajj but visited during Ziyarat tours.'**
+  String get mountArafatDesc;
+
+  /// No description provided for @minaMuzdalifahDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Key Hajj sites, often visited during Ziyarat tours.'**
+  String get minaMuzdalifahDesc;
+
+  /// No description provided for @birthplaceProphetDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Located near the Marwah hills (now a library).'**
+  String get birthplaceProphetDesc;
+
+  /// No description provided for @masjidAlRayyahDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Known as the Mosque of the Flag.'**
+  String get masjidAlRayyahDesc;
+
+  /// No description provided for @masjidAnNabawi.
+  ///
+  /// In en, this message translates to:
+  /// **'Masjid an-Nabawi'**
+  String get masjidAnNabawi;
+
+  /// No description provided for @masjidAnNabawiDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'The Prophet\'s Mosque and his Rawdah (tomb).'**
+  String get masjidAnNabawiDesc;
+
+  /// No description provided for @masjidQuba.
+  ///
+  /// In en, this message translates to:
+  /// **'Masjid Quba'**
+  String get masjidQuba;
+
+  /// No description provided for @masjidQubaDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'The first mosque built in Islam; offering 2 rakat here equals the reward of an Umrah.'**
+  String get masjidQubaDesc;
+
+  /// No description provided for @jannatAlBaqi.
+  ///
+  /// In en, this message translates to:
+  /// **'Jannat al-Baqi'**
+  String get jannatAlBaqi;
+
+  /// No description provided for @jannatAlBaqiDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'The main cemetery housing thousands of companions and family of the Prophet.'**
+  String get jannatAlBaqiDesc;
+
+  /// No description provided for @mountUhud.
+  ///
+  /// In en, this message translates to:
+  /// **'Mount Uhud & Archers\' Hill'**
+  String get mountUhud;
+
+  /// No description provided for @mountUhudDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Site of the Battle of Uhud and the cemetery of the martyrs (including Hamza RA).'**
+  String get mountUhudDesc;
+
+  /// No description provided for @masjidAlQiblatain.
+  ///
+  /// In en, this message translates to:
+  /// **'Masjid Al-Qiblatain'**
+  String get masjidAlQiblatain;
+
+  /// No description provided for @masjidAlQiblatainDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'The mosque where the prayer direction changed from Jerusalem to Makkah.'**
+  String get masjidAlQiblatainDesc;
+
+  /// No description provided for @sevenMosques.
+  ///
+  /// In en, this message translates to:
+  /// **'The Seven Mosques (Khandaq)'**
+  String get sevenMosques;
+
+  /// No description provided for @sevenMosquesDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Site of the Battle of the Trench.'**
+  String get sevenMosquesDesc;
+
+  /// No description provided for @masjidAlGhamamah.
+  ///
+  /// In en, this message translates to:
+  /// **'Masjid Al-Ghamamah'**
+  String get masjidAlGhamamah;
+
+  /// No description provided for @masjidAlGhamamahDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Where the Prophet performed Eid and Rain prayers.'**
+  String get masjidAlGhamamahDesc;
+
+  /// No description provided for @masjidAlJummah.
+  ///
+  /// In en, this message translates to:
+  /// **'Masjid Al-Jummah'**
+  String get masjidAlJummah;
+
+  /// No description provided for @masjidAlJummahDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Where the first Friday prayer was offered.'**
+  String get masjidAlJummahDesc;
+
+  /// No description provided for @masjidBilal.
+  ///
+  /// In en, this message translates to:
+  /// **'Masjid Bilal'**
+  String get masjidBilal;
+
+  /// No description provided for @masjidBilalDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Near the date market, named after Bilal ibn Rabah (RA).'**
+  String get masjidBilalDesc;
+
+  /// No description provided for @ethiqWell.
+  ///
+  /// In en, this message translates to:
+  /// **'Ethiq Well (Garden of Salman Farsi)'**
+  String get ethiqWell;
+
+  /// No description provided for @ethiqWellDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Associated with the story of Salman Farsi\'s freedom.'**
+  String get ethiqWellDesc;
+
+  /// No description provided for @validPassport.
+  ///
+  /// In en, this message translates to:
+  /// **'Valid Passport'**
+  String get validPassport;
+
+  /// No description provided for @validPassportDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Must have 6 months validity.'**
+  String get validPassportDesc;
+
+  /// No description provided for @umrahVisa.
+  ///
+  /// In en, this message translates to:
+  /// **'Umrah Visa'**
+  String get umrahVisa;
+
+  /// No description provided for @umrahVisaDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Electronic visa or tourist visa (depending on nationality).'**
+  String get umrahVisaDesc;
+
+  /// No description provided for @nusukApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Nusuk App'**
+  String get nusukApp;
+
+  /// No description provided for @nusukAppDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Installed and registered (for Rawdah permits).'**
+  String get nusukAppDesc;
+
+  /// No description provided for @vaccinations.
+  ///
+  /// In en, this message translates to:
+  /// **'Vaccinations'**
+  String get vaccinations;
+
+  /// No description provided for @vaccinationsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Meningitis (mandatory), Influenza (recommended).'**
+  String get vaccinationsDesc;
+
+  /// No description provided for @physicalStamina.
+  ///
+  /// In en, this message translates to:
+  /// **'Physical Stamina'**
+  String get physicalStamina;
+
+  /// No description provided for @physicalStaminaDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice walking 5-10km daily before the trip.'**
+  String get physicalStaminaDesc;
+
+  /// No description provided for @ihramCloths.
+  ///
+  /// In en, this message translates to:
+  /// **'Ihram Cloths (Men)'**
+  String get ihramCloths;
+
+  /// No description provided for @ihramClothsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'2 sets of white, unstitched towels.'**
+  String get ihramClothsDesc;
+
+  /// No description provided for @ihramBelt.
+  ///
+  /// In en, this message translates to:
+  /// **'Ihram Belt (Men)'**
+  String get ihramBelt;
+
+  /// No description provided for @ihramBeltDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'To hold the lower garment and keep money/phone safe.'**
+  String get ihramBeltDesc;
+
+  /// No description provided for @footwearMen.
+  ///
+  /// In en, this message translates to:
+  /// **'Footwear (Men)'**
+  String get footwearMen;
+
+  /// No description provided for @footwearMenDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Slippers/sandals that leave the ankles and metatarsals exposed.'**
+  String get footwearMenDesc;
+
+  /// No description provided for @toiletries.
+  ///
+  /// In en, this message translates to:
+  /// **'Unscented Toiletries'**
+  String get toiletries;
+
+  /// No description provided for @toiletriesDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Soap, shampoo, deodorant (for use while in Ihram).'**
+  String get toiletriesDesc;
+
+  /// No description provided for @ihramClothingWomen.
+  ///
+  /// In en, this message translates to:
+  /// **'Ihram Clothing (Women)'**
+  String get ihramClothingWomen;
+
+  /// No description provided for @ihramClothingWomenDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Modest, loose-fitting abayas (any color, though white/black are common).'**
+  String get ihramClothingWomenDesc;
+
+  /// No description provided for @footwearWomen.
+  ///
+  /// In en, this message translates to:
+  /// **'Comfortable Footwear (Women)'**
+  String get footwearWomen;
+
+  /// No description provided for @footwearWomenDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Sneakers or soft walking shoes.'**
+  String get footwearWomenDesc;
+
+  /// No description provided for @hairAccessories.
+  ///
+  /// In en, this message translates to:
+  /// **'Hair Accessories (Women)'**
+  String get hairAccessories;
+
+  /// No description provided for @hairAccessoriesDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'To manage hair under the hijab during rituals.'**
+  String get hairAccessoriesDesc;
+
+  /// No description provided for @firstAidKit.
+  ///
+  /// In en, this message translates to:
+  /// **'First Aid Kit'**
+  String get firstAidKit;
+
+  /// No description provided for @firstAidKitDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Painkillers, flu meds, oral rehydration salts, blister plasters.'**
+  String get firstAidKitDesc;
+
+  /// No description provided for @prayerMat.
+  ///
+  /// In en, this message translates to:
+  /// **'Prayer Mat'**
+  String get prayerMat;
+
+  /// No description provided for @prayerMatDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Lightweight travel version.'**
+  String get prayerMatDesc;
+
+  /// No description provided for @drawstringBag.
+  ///
+  /// In en, this message translates to:
+  /// **'Drawstring Bag'**
+  String get drawstringBag;
+
+  /// No description provided for @drawstringBagDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'To carry shoes when entering the mosque.'**
+  String get drawstringBagDesc;
+
+  /// No description provided for @travelAdapter.
+  ///
+  /// In en, this message translates to:
+  /// **'Universal Travel Adapter'**
+  String get travelAdapter;
+
+  /// No description provided for @travelAdapterDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Saudi Arabia uses Type G (British style).'**
+  String get travelAdapterDesc;
+
+  /// No description provided for @makkahGuideTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Makkah: The Spiritual Core'**
+  String get makkahGuideTitle;
+
+  /// No description provided for @catReligious.
+  ///
+  /// In en, this message translates to:
+  /// **'Religious & Historical Landmarks (Ziyarat)'**
+  String get catReligious;
+
+  /// No description provided for @masjidAlHaramActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity: Perform Tawaf (circumambulation) and Sa’i; drink Zamzam water.'**
+  String get masjidAlHaramActivity;
+
+  /// No description provided for @jabalAlNourActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity: Hiking to the cave (approx. 45 min - 1 hour climb). Note: Best done before Fajr to avoid heat.'**
+  String get jabalAlNourActivity;
+
+  /// No description provided for @jabalThawrActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity: Hiking and viewing the cave.'**
+  String get jabalThawrActivity;
+
+  /// No description provided for @mountArafatActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity: Climbing the small hill where the Prophet delivered his Farewell Sermon; making dua.'**
+  String get mountArafatActivity;
+
+  /// No description provided for @jannatAlMuallaActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity: Visiting the graves to pay respects.'**
+  String get jannatAlMuallaActivity;
+
+  /// No description provided for @catMuseums.
+  ///
+  /// In en, this message translates to:
+  /// **'Museums & Culture'**
+  String get catMuseums;
+
+  /// No description provided for @hiraCulturalDistrict.
+  ///
+  /// In en, this message translates to:
+  /// **'Hira Cultural District'**
+  String get hiraCulturalDistrict;
+
+  /// No description provided for @hiraCulturalDistrictDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Located at the foot of Jabal Al-Nour.'**
+  String get hiraCulturalDistrictDesc;
+
+  /// No description provided for @hiraCulturalDistrictWhy.
+  ///
+  /// In en, this message translates to:
+  /// **'Why visit: A modern museum utilizing 3D technology to explain the story of the revelation. It is much easier than climbing the mountain for those who are elderly.'**
+  String get hiraCulturalDistrictWhy;
+
+  /// No description provided for @exhibitionHolyMosques.
+  ///
+  /// In en, this message translates to:
+  /// **'The Exhibition of the Two Holy Mosques Architecture'**
+  String get exhibitionHolyMosques;
+
+  /// No description provided for @exhibitionHolyMosquesDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Located in the Umm Al-Joud district.'**
+  String get exhibitionHolyMosquesDesc;
+
+  /// No description provided for @exhibitionHolyMosquesWhy.
+  ///
+  /// In en, this message translates to:
+  /// **'Why visit: Contains historical artifacts like the Old Teak Wooden Staircase of the Kaaba (from 1825) and old doors of the Masjid Al-Haram.'**
+  String get exhibitionHolyMosquesWhy;
+
+  /// No description provided for @makkahClockTowerMuseum.
+  ///
+  /// In en, this message translates to:
+  /// **'Makkah Clock Tower Museum'**
+  String get makkahClockTowerMuseum;
+
+  /// No description provided for @makkahClockTowerMuseumDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Located in the top floors of the Clock Tower.'**
+  String get makkahClockTowerMuseumDesc;
+
+  /// No description provided for @makkahClockTowerMuseumWhy.
+  ///
+  /// In en, this message translates to:
+  /// **'Why visit: Features an astronomy museum and the highest observation deck in Makkah for a panoramic view of the Haram.'**
+  String get makkahClockTowerMuseumWhy;
+
+  /// No description provided for @kiswaFactory.
+  ///
+  /// In en, this message translates to:
+  /// **'The Kiswa Factory'**
+  String get kiswaFactory;
+
+  /// No description provided for @kiswaFactoryActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity: Watch artisans hand-embroider the gold threads onto the black silk cloth (Kiswa) that covers the Kaaba. Note: Usually requires a permit or group booking.'**
+  String get kiswaFactoryActivity;
+
+  /// No description provided for @catLeisure.
+  ///
+  /// In en, this message translates to:
+  /// **'Leisure & Shopping Activities'**
+  String get catLeisure;
+
+  /// No description provided for @makkahMall.
+  ///
+  /// In en, this message translates to:
+  /// **'Makkah Mall'**
+  String get makkahMall;
+
+  /// No description provided for @makkahMallDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'One of the largest modern malls in the city.'**
+  String get makkahMallDesc;
+
+  /// No description provided for @makkahMallActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity: Shopping for international brands and dining.'**
+  String get makkahMallActivity;
+
+  /// No description provided for @binDawood.
+  ///
+  /// In en, this message translates to:
+  /// **'Bin Dawood Supermarkets'**
+  String get binDawood;
+
+  /// No description provided for @binDawoodActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity: Buying local snacks, dates, and souvenirs (located inside the Clock Tower and near Haram).'**
+  String get binDawoodActivity;
+
+  /// No description provided for @eatAlbaik.
+  ///
+  /// In en, this message translates to:
+  /// **'Eat \"Albaik\"'**
+  String get eatAlbaik;
+
+  /// No description provided for @eatAlbaikActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity: Trying the famous Saudi fried chicken (a \"must-do\" ritual for almost every pilgrim).'**
+  String get eatAlbaikActivity;
+
+  /// No description provided for @madinahGuideTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Madinah: The City of Peace'**
+  String get madinahGuideTitle;
+
+  /// No description provided for @masjidAnNabawiActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity: Salam to the Prophet (PBUH) and his companions; Praying in the Rawdah (Garden of Paradise) – Requires a permit via the Nusuk App.'**
+  String get masjidAnNabawiActivity;
+
+  /// No description provided for @masjidQubaActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity: Praying 2 Rakaat (Equivalent to the reward of an Umrah).'**
+  String get masjidQubaActivity;
+
+  /// No description provided for @mountUhudActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity: Climbing the small Archers\' Hill; visiting the Shuhada Cemetery (Graves of Hamza RA and other martyrs).'**
+  String get mountUhudActivity;
+
+  /// No description provided for @masjidAlQiblatainActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity: Visiting the site where the prayer direction changed from Jerusalem to Makkah.'**
+  String get masjidAlQiblatainActivity;
+
+  /// No description provided for @sevenMosquesActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity: Visiting the small historical mosques (Masjid Fath, Masjid Salman Farsi, etc.).'**
+  String get sevenMosquesActivity;
+
+  /// No description provided for @jannatAlBaqiActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity: Visiting the graves of thousands of Sahaba and family members of the Prophet. Note: Open briefly after Fajr and Asr prayers.'**
+  String get jannatAlBaqiActivity;
+
+  /// No description provided for @prophetBiographyMuseum.
+  ///
+  /// In en, this message translates to:
+  /// **'International Fair and Museum of the Prophet\'s Biography'**
+  String get prophetBiographyMuseum;
+
+  /// No description provided for @prophetBiographyMuseumDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Located just outside the Prophet\'s Mosque (south side).'**
+  String get prophetBiographyMuseumDesc;
+
+  /// No description provided for @prophetBiographyMuseumWhy.
+  ///
+  /// In en, this message translates to:
+  /// **'Why visit: Incredible modern displays and cinema screens detailing the life of the Prophet (Seerah) and a model of his house. Highly recommended.'**
+  String get prophetBiographyMuseumWhy;
+
+  /// No description provided for @hejazRailwayMuseum.
+  ///
+  /// In en, this message translates to:
+  /// **'Hejaz Railway Museum'**
+  String get hejazRailwayMuseum;
+
+  /// No description provided for @hejazRailwayMuseumWhy.
+  ///
+  /// In en, this message translates to:
+  /// **'Why visit: An old Ottoman railway station converted into a museum showing the history of the train line that once connected Damascus to Madinah.'**
+  String get hejazRailwayMuseumWhy;
+
+  /// No description provided for @darAlMadinahMuseum.
+  ///
+  /// In en, this message translates to:
+  /// **'Dar Al Madinah Museum'**
+  String get darAlMadinahMuseum;
+
+  /// No description provided for @darAlMadinahMuseumWhy.
+  ///
+  /// In en, this message translates to:
+  /// **'Why visit: Focuses specifically on the architectural history and expansion of Madinah city over the centuries.'**
+  String get darAlMadinahMuseumWhy;
+
+  /// No description provided for @catLeisureNature.
+  ///
+  /// In en, this message translates to:
+  /// **'Leisure & Nature Activities'**
+  String get catLeisureNature;
+
+  /// No description provided for @madinahDatesMarket.
+  ///
+  /// In en, this message translates to:
+  /// **'Madinah Dates Market (Souq Al Tumour)'**
+  String get madinahDatesMarket;
+
+  /// No description provided for @madinahDatesMarketActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity: Tasting and buying Ajwa dates (and many other varieties) to take home.'**
+  String get madinahDatesMarketActivity;
+
+  /// No description provided for @ethiqWellActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity: Visiting the garden associated with the freeing of Salman Farsi; enjoying tea under the date palms.'**
+  String get ethiqWellActivity;
+
+  /// No description provided for @madinahHopOnBus.
+  ///
+  /// In en, this message translates to:
+  /// **'Madinah Hop-On Hop-Off Bus'**
+  String get madinahHopOnBus;
+
+  /// No description provided for @madinahHopOnBusActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity: A double-decker bus tour that loops around all the major historical sites (great for DIY travelers).'**
+  String get madinahHopOnBusActivity;
 }
 
 class _AppLocalizationsDelegate

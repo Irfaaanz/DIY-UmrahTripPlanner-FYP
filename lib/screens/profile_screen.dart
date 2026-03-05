@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../l10n/generated/app_localizations.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
+import 'package:flutter/foundation.dart';
 import '../services/auth_service.dart';
+import '../services/profile_service.dart';
 import 'sign_in_screen.dart';
 import 'profile_details_screen.dart';
 import 'faq_screen.dart';
@@ -16,7 +22,8 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   String userName = 'User';
-  String? profileImagePath; // Can be set to a local image path or network URL
+  String? profileImagePath;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -26,9 +33,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _loadUserName() async {
     final displayName = await AuthService.getDisplayName();
+    final profileData = await ProfileService.getProfileData();
     if (mounted) {
       setState(() {
         userName = displayName ?? 'User';
+        profileImagePath = profileData?['profileImagePath'];
       });
     }
   }
@@ -92,15 +101,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               color: theme.canvasColor,
             ),
-            child: profileImagePath != null
+            child: profileImagePath != null && profileImagePath!.isNotEmpty
                 ? ClipOval(
-                    child: Image.network(
-                      profileImagePath!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return _buildDefaultProfileIcon();
-                      },
-                    ),
+                    child: kIsWeb
+                        ? Image.network(
+                            profileImagePath!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return _buildDefaultProfileIcon();
+                            },
+                          )
+                        : Image.file(
+                            File(profileImagePath!),
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return _buildDefaultProfileIcon();
+                            },
+                          ),
                   )
                 : _buildDefaultProfileIcon(),
           ),
@@ -153,13 +170,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildUserName() {
     final theme = Theme.of(context);
-    return Text(
-      userName,
-      style: GoogleFonts.poppins(
-        fontSize: 20,
-        fontWeight: FontWeight.w500,
-        color: theme.textTheme.titleLarge?.color,
-      ),
+    return Column(
+      children: [
+        Text(
+          userName,
+          style: GoogleFonts.poppins(
+            fontSize: 20,
+            fontWeight: FontWeight.w500,
+            color: theme.textTheme.titleLarge?.color,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          decoration: BoxDecoration(
+            color: theme.primaryColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            "v1.1.0 (Cloud Sync)", 
+            style: GoogleFonts.poppins(
+              fontSize: 10,
+              color: theme.primaryColor,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -342,43 +379,69 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? image = await _picker.pickImage(source: source);
+      if (image != null) {
+        // Save image locally
+        String savedPath;
+        if (kIsWeb) {
+          savedPath = image.path;
+        } else {
+          final appDir = await getApplicationDocumentsDirectory();
+          final fileName = 'profile_${DateTime.now().millisecondsSinceEpoch}${path.extension(image.path)}';
+          final savedImage = await File(image.path).copy('${appDir.path}/$fileName');
+          savedPath = savedImage.path;
+        }
+        
+        // Save path to profile service
+        await ProfileService.saveProfileData(profileImagePath: savedPath);
+        
+        if (mounted) {
+          setState(() {
+            profileImagePath = savedPath;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(AppLocalizations.of(context)!.profileSaved)),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating profile picture: $e')),
+        );
+      }
+    }
+  }
+
   void _pickImageFromGallery() {
-    final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          l10n.galleryPickerNotImplemented,
-          style: GoogleFonts.poppins(),
-        ),
-      ),
-    );
+    _pickImage(ImageSource.gallery);
   }
 
   void _takePhoto() {
-    final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          l10n.cameraNotImplemented,
-          style: GoogleFonts.poppins(),
-        ),
-      ),
-    );
+    _pickImage(ImageSource.camera);
   }
 
-  void _removeProfilePicture() {
+  void _removeProfilePicture() async {
     final l10n = AppLocalizations.of(context)!;
+    
     setState(() {
-      profileImagePath = null;
+      profileImagePath = '';
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          l10n.profilePictureRemoved,
-          style: GoogleFonts.poppins(),
+    
+    await ProfileService.saveProfileData(profileImagePath: '');
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            l10n.profilePictureRemoved,
+            style: GoogleFonts.poppins(),
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   void _showLogoutDialog(BuildContext context) {

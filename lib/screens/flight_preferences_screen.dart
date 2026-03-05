@@ -42,6 +42,17 @@ class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
+    
+    final Map<String, String> flightPrefDisplay = {
+      'Direct': l10n.direct,
+      'Transit': l10n.transit,
+    };
+
+    final Map<String, String> serviceTypeDisplay = {
+      'Full Service': l10n.fullService,
+      'Low Cost': l10n.lowCost,
+    };
+
     final bool canProceed = _flightPreference != null && _serviceTypePreference != null;
 
     return Scaffold(
@@ -126,6 +137,7 @@ class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
                 hintText: l10n.pickFlightPref,
                 value: _flightPreference,
                 items: _flightPreferences,
+                displayMap: flightPrefDisplay,
                 onChanged: (value) {
                   setState(() {
                     _flightPreference = value;
@@ -139,6 +151,7 @@ class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
                 hintText: l10n.pickServiceType,
                 value: _serviceTypePreference,
                 items: _serviceTypePreferences,
+                displayMap: serviceTypeDisplay,
                 onChanged: (value) {
                   setState(() {
                     _serviceTypePreference = value;
@@ -206,6 +219,7 @@ class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
     required String hintText,
     required String? value,
     required List<String> items,
+    required Map<String, String> displayMap,
     required ValueChanged<String?> onChanged,
   }) {
     final theme = Theme.of(context);
@@ -251,7 +265,7 @@ class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
                 return DropdownMenuItem<String>(
                   value: item,
                   child: Text(
-                    item,
+                    displayMap[item] ?? item,
                     style: GoogleFonts.montserrat(
                       fontSize: 16,
                       fontWeight: FontWeight.w400,

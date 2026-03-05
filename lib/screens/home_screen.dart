@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'dart:async';
 import '../services/auth_service.dart';
 import 'my_trips_screen.dart';
+import 'makkah_guide_screen.dart';
+import 'madinah_guide_screen.dart';
 import '../providers/theme_provider.dart';
 import '../providers/language_provider.dart';
 import '../l10n/generated/app_localizations.dart';
@@ -695,14 +697,26 @@ class _HomeScreenState extends State<HomeScreen> {
             image: 'assets/images/makkah-img2.jpg',
             title: l10n.checkOutSights,
             buttonText: l10n.exploreMakkah,
-            onTap: _navigateToMyTrips,
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const MakkahGuideScreen(),
+                ),
+              );
+            },
           ),
           const SizedBox(height: 16),
           _buildCategoryCard(
             image: 'assets/images/madinah.jpeg',
             title: l10n.checkOutSights,
             buttonText: l10n.exploreMadinah,
-            onTap: _navigateToMyTrips,
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const MadinahGuideScreen(),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -714,18 +728,32 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final titleColor = Theme.of(context).textTheme.titleLarge?.color ?? Colors.black87;
     final subtitleColor = Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black87;
+    final headerColor = Theme.of(context).textTheme.titleMedium?.color ?? Colors.black87;
 
-    final places = [
-      l10n.masjidAlHaram,
-      l10n.jabalAlNour,
-      l10n.jabalThawr,
-      l10n.jannatAlMualla,
-      l10n.masjidAlJinn,
-      l10n.masjidAisha,
-      l10n.mountArafat,
-      l10n.minaMuzdalifah,
-      l10n.birthplaceProphet,
-      l10n.masjidAlRayyah,
+    final makkahPlaces = [
+      {'title': l10n.masjidAlHaram, 'description': l10n.masjidAlHaramDesc},
+      {'title': l10n.jabalAlNour, 'description': l10n.jabalAlNourDesc},
+      {'title': l10n.jabalThawr, 'description': l10n.jabalThawrDesc},
+      {'title': l10n.jannatAlMualla, 'description': l10n.jannatAlMuallaDesc},
+      {'title': l10n.masjidAlJinn, 'description': l10n.masjidAlJinnDesc},
+      {'title': l10n.masjidAisha, 'description': l10n.masjidAishaDesc},
+      {'title': l10n.mountArafat, 'description': l10n.mountArafatDesc},
+      {'title': l10n.minaMuzdalifah, 'description': l10n.minaMuzdalifahDesc},
+      {'title': l10n.birthplaceProphet, 'description': l10n.birthplaceProphetDesc},
+      {'title': l10n.masjidAlRayyah, 'description': l10n.masjidAlRayyahDesc},
+    ];
+
+    final madinahPlaces = [
+      {'title': l10n.masjidAnNabawi, 'description': l10n.masjidAnNabawiDesc},
+      {'title': l10n.masjidQuba, 'description': l10n.masjidQubaDesc},
+      {'title': l10n.jannatAlBaqi, 'description': l10n.jannatAlBaqiDesc},
+      {'title': l10n.mountUhud, 'description': l10n.mountUhudDesc},
+      {'title': l10n.masjidAlQiblatain, 'description': l10n.masjidAlQiblatainDesc},
+      {'title': l10n.sevenMosques, 'description': l10n.sevenMosquesDesc},
+      {'title': l10n.masjidAlGhamamah, 'description': l10n.masjidAlGhamamahDesc},
+      {'title': l10n.masjidAlJummah, 'description': l10n.masjidAlJummahDesc},
+      {'title': l10n.masjidBilal, 'description': l10n.masjidBilalDesc},
+      {'title': l10n.ethiqWell, 'description': l10n.ethiqWellDesc},
     ];
 
     return Padding(
@@ -734,7 +762,7 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            l10n.makkahHolyCity,
+            l10n.worshipPlaces,
             style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -751,7 +779,11 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          ...places.map((place) => _buildPlaceItem(place)),
+          _buildSectionHeader(l10n.makkahHolyCity, headerColor),
+          ...makkahPlaces.map((place) => _buildPlaceItem(place['title']!, place['description']!)),
+          const SizedBox(height: 16),
+          _buildSectionHeader('Madinah (The City of the Prophet)', headerColor),
+          ...madinahPlaces.map((place) => _buildPlaceItem(place['title']!, place['description']!)),
         ],
       ),
     );
@@ -759,20 +791,34 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildMustVisitPlaceContent() {
     final l10n = AppLocalizations.of(context)!;
-    final TitleColor = Theme.of(context).textTheme.titleLarge?.color ?? Colors.black87;
-    final SubtitleColor = Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black87;
+    final titleColor = Theme.of(context).textTheme.titleLarge?.color ?? Colors.black87;
+    final subtitleColor = Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black87;
+    final headerColor = Theme.of(context).textTheme.titleMedium?.color ?? Colors.black87;
 
-    final places = [
-      l10n.masjidAlHaram,
-      l10n.jabalAlNour,
-      l10n.jabalThawr,
-      l10n.jannatAlMualla,
-      l10n.masjidAlJinn,
-      l10n.masjidAisha,
-      l10n.mountArafat,
-      l10n.minaMuzdalifah,
-      l10n.birthplaceProphet,
-      l10n.masjidAlRayyah,
+    final makkahPlaces = [
+      {'title': l10n.masjidAlHaram, 'description': l10n.masjidAlHaramDesc},
+      {'title': l10n.jabalAlNour, 'description': l10n.jabalAlNourDesc},
+      {'title': l10n.jabalThawr, 'description': l10n.jabalThawrDesc},
+      {'title': l10n.jannatAlMualla, 'description': l10n.jannatAlMuallaDesc},
+      {'title': l10n.masjidAlJinn, 'description': l10n.masjidAlJinnDesc},
+      {'title': l10n.masjidAisha, 'description': l10n.masjidAishaDesc},
+      {'title': l10n.mountArafat, 'description': l10n.mountArafatDesc},
+      {'title': l10n.minaMuzdalifah, 'description': l10n.minaMuzdalifahDesc},
+      {'title': l10n.birthplaceProphet, 'description': l10n.birthplaceProphetDesc},
+      {'title': l10n.masjidAlRayyah, 'description': l10n.masjidAlRayyahDesc},
+    ];
+
+    final madinahPlaces = [
+      {'title': l10n.masjidAnNabawi, 'description': l10n.masjidAnNabawiDesc},
+      {'title': l10n.masjidQuba, 'description': l10n.masjidQubaDesc},
+      {'title': l10n.jannatAlBaqi, 'description': l10n.jannatAlBaqiDesc},
+      {'title': l10n.mountUhud, 'description': l10n.mountUhudDesc},
+      {'title': l10n.masjidAlQiblatain, 'description': l10n.masjidAlQiblatainDesc},
+      {'title': l10n.sevenMosques, 'description': l10n.sevenMosquesDesc},
+      {'title': l10n.masjidAlGhamamah, 'description': l10n.masjidAlGhamamahDesc},
+      {'title': l10n.masjidAlJummah, 'description': l10n.masjidAlJummahDesc},
+      {'title': l10n.masjidBilal, 'description': l10n.masjidBilalDesc},
+      {'title': l10n.ethiqWell, 'description': l10n.ethiqWellDesc},
     ];
 
     return Padding(
@@ -785,7 +831,7 @@ class _HomeScreenState extends State<HomeScreen> {
             style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: TitleColor,
+              color: titleColor,
             ),
           ),
           const SizedBox(height: 4),
@@ -794,11 +840,15 @@ class _HomeScreenState extends State<HomeScreen> {
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w400,
-              color: SubtitleColor,
+              color: subtitleColor,
             ),
           ),
           const SizedBox(height: 16),
-          ...places.map((place) => _buildPlaceItem(place)),
+          _buildSectionHeader(l10n.makkahHolyCity, headerColor),
+          ...makkahPlaces.map((place) => _buildPlaceItem(place['title']!, place['description']!)),
+          const SizedBox(height: 16),
+          _buildSectionHeader('Madinah (The City of the Prophet)', headerColor),
+          ...madinahPlaces.map((place) => _buildPlaceItem(place['title']!, place['description']!)),
         ],
       ),
     );
@@ -808,21 +858,34 @@ class _HomeScreenState extends State<HomeScreen> {
     final l10n = AppLocalizations.of(context)!;
     final titleColor = Theme.of(context).textTheme.titleLarge?.color ?? Colors.black87;
     final subtitleColor = Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black87;
+    final headerColor = Theme.of(context).textTheme.titleMedium?.color ?? Colors.black87;
 
-    final places = [
-      l10n.masjidAlHaram,
-      // For basic needs, maybe we want different items, but reusing is fine if they are places.
-      // Or maybe basic needs are different?
-      // The original code reused the same list.
-      l10n.jabalAlNour,
-      l10n.jabalThawr,
-      l10n.jannatAlMualla,
-      l10n.masjidAlJinn,
-      l10n.masjidAisha,
-      l10n.mountArafat,
-      l10n.minaMuzdalifah,
-      l10n.birthplaceProphet,
-      l10n.masjidAlRayyah,
+    final preDeparture = [
+      {'title': l10n.validPassport, 'description': l10n.validPassportDesc},
+      {'title': l10n.umrahVisa, 'description': l10n.umrahVisaDesc},
+      {'title': l10n.nusukApp, 'description': l10n.nusukAppDesc},
+      {'title': l10n.vaccinations, 'description': l10n.vaccinationsDesc},
+      {'title': l10n.physicalStamina, 'description': l10n.physicalStaminaDesc},
+    ];
+
+    final menNeeds = [
+      {'title': l10n.ihramCloths, 'description': l10n.ihramClothsDesc},
+      {'title': l10n.ihramBelt, 'description': l10n.ihramBeltDesc},
+      {'title': l10n.footwearMen, 'description': l10n.footwearMenDesc},
+      {'title': l10n.toiletries, 'description': l10n.toiletriesDesc},
+    ];
+
+    final womenNeeds = [
+      {'title': l10n.ihramClothingWomen, 'description': l10n.ihramClothingWomenDesc},
+      {'title': l10n.footwearWomen, 'description': l10n.footwearWomenDesc},
+      {'title': l10n.hairAccessories, 'description': l10n.hairAccessoriesDesc},
+    ];
+
+    final generalEssentials = [
+      {'title': l10n.firstAidKit, 'description': l10n.firstAidKitDesc},
+      {'title': l10n.prayerMat, 'description': l10n.prayerMatDesc},
+      {'title': l10n.drawstringBag, 'description': l10n.drawstringBagDesc},
+      {'title': l10n.travelAdapter, 'description': l10n.travelAdapterDesc},
     ];
 
     return Padding(
@@ -848,25 +911,51 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          ...places.map((place) => _buildPlaceItem(place)),
+          
+          _buildSectionHeader('Pre-Departure Preparation', headerColor),
+          ...preDeparture.map((item) => _buildPlaceItem(item['title']!, item['description']!)),
+          const SizedBox(height: 16),
+          
+          _buildSectionHeader('Basic Packing Needs (Men)', headerColor),
+          ...menNeeds.map((item) => _buildPlaceItem(item['title']!, item['description']!)),
+          const SizedBox(height: 16),
+
+          _buildSectionHeader('Basic Packing Needs (Women)', headerColor),
+          ...womenNeeds.map((item) => _buildPlaceItem(item['title']!, item['description']!)),
+          const SizedBox(height: 16),
+
+          _buildSectionHeader('General Essentials', headerColor),
+          ...generalEssentials.map((item) => _buildPlaceItem(item['title']!, item['description']!)),
         ],
       ),
     );
   }
 
-  Widget _buildPlaceItem(String placeName) {
-    final isExpanded = _expandedPlaces.contains(placeName);
-    const loremIpsum = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.';
+  Widget _buildSectionHeader(String title, Color color) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12, top: 8),
+      child: Text(
+        title,
+        style: GoogleFonts.poppins(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: color,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceItem(String title, String description) {
+    final isExpanded = _expandedPlaces.contains(title);
     
     final theme = Theme.of(context);
-    final cardColor = theme.cardColor; // Or theme.scaffoldBackgroundColor depending on design
     final textColor = theme.textTheme.bodyLarge?.color ?? Colors.black87;
     final subTextColor = theme.textTheme.bodyMedium?.color ?? Colors.black54;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: theme.scaffoldBackgroundColor, // Using scaffold bg or card bg
+        color: theme.scaffoldBackgroundColor, 
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -882,7 +971,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           ListTile(
             title: Text(
-              placeName,
+              title,
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
@@ -897,9 +986,9 @@ class _HomeScreenState extends State<HomeScreen> {
             onTap: () {
               setState(() {
                 if (isExpanded) {
-                  _expandedPlaces.remove(placeName);
+                  _expandedPlaces.remove(title);
                 } else {
-                  _expandedPlaces.add(placeName);
+                  _expandedPlaces.add(title);
                 }
               });
             },
@@ -909,7 +998,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Padding(
               padding: const EdgeInsets.all(16),
               child: Text(
-                loremIpsum,
+                description,
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,

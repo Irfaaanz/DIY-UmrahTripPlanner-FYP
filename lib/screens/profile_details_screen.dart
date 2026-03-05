@@ -1,3 +1,8 @@
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/profile_service.dart';
@@ -22,6 +27,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
   bool _isLoading = true;
   bool _isSaving = false;
   bool _obscurePassword = true;
+  
+  String? _profileImagePath;
+  File? _newProfileImage;
+  XFile? _newXFileImage;
+  final ImagePicker _picker = ImagePicker();
   
   final List<String> _genderOptions = ['Male', 'Female'];
 
@@ -59,9 +69,81 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
         }
         _emailController.text = profile?['email'] ?? '';
         _phoneController.text = profile?['phoneNo'] ?? '';
-        _passwordController.text = profile?['password'] ?? '';
+        // Do not pre-fill password with masked characters to avoids confusion
+        _passwordController.text = ''; 
+        _profileImagePath = profile?['profileImagePath'];
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? image = await _picker.pickImage(source: source);
+      if (image != null) {
+        setState(() {
+          _newXFileImage = image;
+          if (!kIsWeb) {
+             _newProfileImage = File(image.path);
+          } else {
+             // For web we can't create File(image.path) safely or uselessly
+             _newProfileImage = null; 
+          }
+        });
+      }
+    } catch (e) {
+      // Handle error
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error picking image: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _showImageSourceActionSheet() async {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: Text(l10n.chooseFromGallery),
+              onTap: () {
+                Navigator.of(context).pop();
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_camera),
+              title: Text(l10n.takePhoto),
+              onTap: () {
+                Navigator.of(context).pop();
+                _pickImage(ImageSource.camera);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<String?> _saveProfileImage() async {
+    if (_newProfileImage == null) return _profileImagePath;
+    
+    try {
+      if (kIsWeb) {
+        return _newProfileImage!.path;
+      }
+      final appDir = await getApplicationDocumentsDirectory();
+      final fileName = 'profile_${DateTime.now().millisecondsSinceEpoch}${path.extension(_newProfileImage!.path)}';
+      final savedImage = await _newProfileImage!.copy('${appDir.path}/$fileName');
+      return savedImage.path;
+    } catch (e) {
+      debugPrint('Error saving image: $e');
+      return _profileImagePath;
     }
   }
 
@@ -71,6 +153,14 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
     });
 
     try {
+      // Save profile image if new one selected
+      String? imagePath;
+      if (_newXFileImage != null) {
+          imagePath = await ProfileService.uploadProfileImageXFile(_newXFileImage);
+      } else {
+          imagePath = _profileImagePath;
+      }
+
       // Save profile data
       final success = await ProfileService.saveProfileData(
         displayName: _displayNameController.text.trim().isEmpty 
@@ -83,11 +173,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
         phoneNo: _phoneController.text.trim().isEmpty 
             ? null 
             : _phoneController.text.trim(),
+        profileImagePath: imagePath,
       );
 
-      // Update password if changed (not masked)
-      if (_passwordController.text != '**********' && 
-          _passwordController.text.isNotEmpty) {
+      // Update password if changed
+      if (_passwordController.text.isNotEmpty) {
         await ProfileService.updatePassword(_passwordController.text);
       }
 
@@ -181,26 +271,81 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               child: Column(
                 children: [
-                  // Profile Picture
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: theme.canvasColor,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
-                          spreadRadius: 2,
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
+                  GestureDetector(
+                    onTap: _showImageSourceActionSheet,
+                    child: Stack(
+                      children: [
+                        Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: theme.canvasColor,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.1),
+                                spreadRadius: 2,
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: ClipOval(
+                          child: ClipOval(
+                            child: _newXFileImage != null
+                                ? (kIsWeb 
+                                    ? Image.network(
+                                        _newXFileImage!.path, 
+                                        width: 100, 
+                                        height: 100, 
+                                        fit: BoxFit.cover,
+                                      )
+                                    : Image.file(
+                                        File(_newXFileImage!.path),
+                                        width: 100,
+                                        height: 100,
+                                        fit: BoxFit.cover,
+                                      ))
+                                : _profileImagePath != null && _profileImagePath!.isNotEmpty
+                                    ? Image.network(
+                                        _profileImagePath!,
+                                        width: 100,
+                                        height: 100,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return Icon(
+                                            Icons.person,
+                                            size: 50,
+                                            color: theme.iconTheme.color?.withOpacity(0.5),
+                                          );
+                                        },
+                                      )
+                                    : Icon(
+                                        Icons.person,
+                                        size: 50,
+                                        color: theme.iconTheme.color?.withOpacity(0.5),
+                                      ),
+                          ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: theme.primaryColor,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: theme.canvasColor, width: 2),
+                            ),
+                            child: const Icon(
+                              Icons.camera_alt,
+                              size: 14,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                       ],
-                    ),
-                    child: Icon(
-                      Icons.person,
-                      size: 50,
-                      color: theme.iconTheme.color?.withOpacity(0.5),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -242,7 +387,8 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                   ),
                   const SizedBox(height: 16),
                   _buildField(
-                    label: l10n.passwords,
+                    label: l10n.passwords, // Keep label, but behavior changes
+                    hintText: "Leave empty to keep current",
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     suffixIcon: IconButton(
@@ -307,6 +453,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
     TextInputType? keyboardType,
     bool obscureText = false,
     Widget? suffixIcon,
+    String? hintText,
   }) {
     final theme = Theme.of(context);
     return Container(
@@ -334,6 +481,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
         ),
         decoration: InputDecoration(
           labelText: label,
+          hintText: hintText, // Added hintText
+          hintStyle: GoogleFonts.poppins(
+            fontSize: 14,
+            color: theme.textTheme.bodyMedium?.color?.withOpacity(0.5),
+          ),
           labelStyle: GoogleFonts.poppins(
             fontSize: 14,
             color: theme.textTheme.bodyMedium?.color,

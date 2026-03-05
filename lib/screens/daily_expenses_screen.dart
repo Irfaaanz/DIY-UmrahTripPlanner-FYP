@@ -46,6 +46,13 @@ class _DailyExpensesScreenState extends State<DailyExpensesScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
+    
+    final Map<String, String> dailyExpensesDisplay = {
+      'Comfortable': l10n.comfortable,
+      'Moderate': l10n.moderate,
+      'Minimal': l10n.minimal,
+    };
+
     final bool canProceed = _dailyExpensesPreference != null;
 
     return Scaffold(
@@ -130,6 +137,7 @@ class _DailyExpensesScreenState extends State<DailyExpensesScreen> {
                 hintText: l10n.pickDailyExpensesPref,
                 value: _dailyExpensesPreference,
                 items: _dailyExpensesOptions,
+                displayMap: dailyExpensesDisplay,
                 onChanged: (value) {
                   setState(() {
                     _dailyExpensesPreference = value;
@@ -199,6 +207,7 @@ class _DailyExpensesScreenState extends State<DailyExpensesScreen> {
     required String hintText,
     required String? value,
     required List<String> items,
+    required Map<String, String> displayMap,
     required ValueChanged<String?> onChanged,
   }) {
     final theme = Theme.of(context);
@@ -244,7 +253,7 @@ class _DailyExpensesScreenState extends State<DailyExpensesScreen> {
                 return DropdownMenuItem<String>(
                   value: item,
                   child: Text(
-                    item,
+                    displayMap[item] ?? item,
                     style: GoogleFonts.montserrat(
                       fontSize: 16,
                       fontWeight: FontWeight.w400,

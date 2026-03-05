@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'optimized_budget_result_screen.dart';
+import '../services/trip_service.dart';
 import '../l10n/generated/app_localizations.dart';
 
 enum SortOption { date, nameAsc, nameDesc }
@@ -16,13 +17,14 @@ class SavedScreen extends StatefulWidget {
 }
 
 class _SavedScreenState extends State<SavedScreen> {
+  final TripService _tripService = TripService();
   List<Map<String, dynamic>> _savedTrips = [];
   bool _isLoading = true;
   SortOption _currentSort = SortOption.date;
   
   // Selection Mode State
   bool _isSelectionMode = false;
-  final Set<String> _selectedTripIds = {}; // Using createdAt as ID
+  final Set<String> _selectedTripIds = {}; // Using Document ID as ID
 
   @override
   void initState() {
@@ -36,24 +38,23 @@ class _SavedScreenState extends State<SavedScreen> {
     });
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final savedTripsJson = prefs.getStringList('saved_trips') ?? [];
-      
-      final trips = savedTripsJson.map((json) {
-        return jsonDecode(json) as Map<String, dynamic>;
-      }).toList();
+      final trips = await _tripService.getSavedTrips();
       
       // Sort based on current option
       _sortTripsList(trips);
 
-      setState(() {
-        _savedTrips = trips;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _savedTrips = trips;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -95,29 +96,14 @@ class _SavedScreenState extends State<SavedScreen> {
 
   Future<void> _deleteTrip(int index) async {
     try {
-      // Get the trip to delete from the sorted list using the index
-      if (index < 0 || index >= _savedTrips.length) {
-        return;
-      }
+      if (index < 0 || index >= _savedTrips.length) return;
       
       final tripToDelete = _savedTrips[index];
-      final tripToDeleteCreatedAt = tripToDelete['createdAt'] as String;
+      final tripId = tripToDelete['id'] as String?;
       
-      // Find and remove the trip from the unsorted list in SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      final savedTrips = prefs.getStringList('saved_trips') ?? [];
+      if (tripId == null) return;
       
-      // Find the trip by matching createdAt timestamp
-      savedTrips.removeWhere((tripJson) {
-        try {
-          final trip = jsonDecode(tripJson) as Map<String, dynamic>;
-          return trip['createdAt'] == tripToDeleteCreatedAt;
-        } catch (e) {
-          return false;
-        }
-      });
-      
-      await prefs.setStringList('saved_trips', savedTrips);
+      await _tripService.deleteTrip(tripId);
       await _loadSavedTrips();
       
       if (mounted) {
@@ -152,20 +138,9 @@ class _SavedScreenState extends State<SavedScreen> {
     try {
       if (_selectedTripIds.isEmpty) return;
 
-      final prefs = await SharedPreferences.getInstance();
-      final savedTrips = prefs.getStringList('saved_trips') ?? [];
-
-      // Remove trips with matching IDs (createdAt)
-      savedTrips.removeWhere((tripJson) {
-        try {
-          final trip = jsonDecode(tripJson) as Map<String, dynamic>;
-          return _selectedTripIds.contains(trip['createdAt']);
-        } catch (e) {
-          return false;
-        }
-      });
-
-      await prefs.setStringList('saved_trips', savedTrips);
+      for (var id in _selectedTripIds) {
+          await _tripService.deleteTrip(id);
+      }
       
       setState(() {
          _selectedTripIds.clear();
@@ -201,8 +176,8 @@ class _SavedScreenState extends State<SavedScreen> {
             age: int.tryParse(trip['age'].toString()) ?? 25,
             budget: double.tryParse(trip['budget'].toString()) ?? 5000.0,
             duration: int.tryParse(trip['duration'].toString()) ?? 10,
-            daysMakkah: 0, 
-            daysMadinah: 0,
+            daysMakkah: 0, // Not needed as loaded from result
+            daysMadinah: 0, // Not needed as loaded from result
             hotelPreference: trip['hotelPreference']?.toString() ?? 'Standard',
             hotelDistance: trip['hotelDistance']?.toString() ?? 'Moderate',
             roomType: trip['roomType']?.toString() ?? 'Quad',
@@ -309,48 +284,54 @@ class _SavedScreenState extends State<SavedScreen> {
           ? const Center(
               child: CircularProgressIndicator(),
             )
-          : _savedTrips.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.bookmark_outline,
-                        size: 80,
-                        color: Colors.grey[400],
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        l10n.noSavedItems,
-                        style: GoogleFonts.poppins(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        l10n.itemsWillAppearHere,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          color: Colors.grey[500],
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              : RefreshIndicator(
+          : RefreshIndicator(
                   onRefresh: _loadSavedTrips,
-                  child: ListView.builder(
+                  child: _savedTrips.isEmpty 
+                    ? ListView( // Wrap in ListView to allow RefreshIndicator to work
+                        children: [
+                           SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+                           Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.bookmark_outline,
+                                  size: 80,
+                                  color: Colors.grey[400],
+                                ),
+                                const SizedBox(height: 20),
+                                Text(
+                                  l10n.noSavedItems,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Text(
+                                  l10n.itemsWillAppearHere,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    color: Colors.grey[500],
+                                  ),
+                                ),
+                              ],
+                            ),
+                           )
+                        ],
+                      )
+                    : ListView.builder(
                     padding: const EdgeInsets.all(16),
                     itemCount: _savedTrips.length,
                     itemBuilder: (context, index) {
                       final trip = _savedTrips[index];
+                      final tripId = trip['id'] as String; // Firestore ID
                       final tripName = trip['tripName'] as String? ?? 'Umrah Trip Plan';
-                      final age = trip['age'] as int;
-                      final budget = trip['budget'] as double;
-                      final duration = trip['duration'] as int;
-                      final createdAt = trip['createdAt'] as String;
+                      final age = trip['age'] as int? ?? 0;
+                      final budget = double.tryParse(trip['budget'].toString()) ?? 0.0;
+                      final duration = trip['duration'] as int? ?? 0;
+                      final createdAt = trip['createdAt'] as String? ?? '';
 
                       return Card(
                         margin: const EdgeInsets.only(bottom: 12),
@@ -364,19 +345,19 @@ class _SavedScreenState extends State<SavedScreen> {
                           onLongPress: () {
                             setState(() {
                               _isSelectionMode = true;
-                              _selectedTripIds.add(createdAt);
+                              _selectedTripIds.add(tripId);
                             });
                           },
                           onTap: () {
                             if (_isSelectionMode) {
                               setState(() {
-                                if (_selectedTripIds.contains(createdAt)) {
-                                  _selectedTripIds.remove(createdAt);
+                                if (_selectedTripIds.contains(tripId)) {
+                                  _selectedTripIds.remove(tripId);
                                   if (_selectedTripIds.isEmpty) {
                                     _isSelectionMode = false;
                                   }
                                 } else {
-                                  _selectedTripIds.add(createdAt);
+                                  _selectedTripIds.add(tripId);
                                 }
                               });
                             } else {
@@ -385,7 +366,7 @@ class _SavedScreenState extends State<SavedScreen> {
                           },
                           child: Container(
                             decoration: BoxDecoration(
-                              color: _isSelectionMode && _selectedTripIds.contains(createdAt)
+                              color: _isSelectionMode && _selectedTripIds.contains(tripId)
                                   ? theme.primaryColor.withOpacity(0.1)
                                   : null,
                               borderRadius: BorderRadius.circular(12),
@@ -422,14 +403,14 @@ class _SavedScreenState extends State<SavedScreen> {
                                     ),
                                     if (_isSelectionMode)
                                       Checkbox(
-                                        value: _selectedTripIds.contains(createdAt),
+                                        value: _selectedTripIds.contains(tripId),
                                         activeColor: theme.primaryColor,
                                         onChanged: (val) {
                                           setState(() {
                                             if (val == true) {
-                                              _selectedTripIds.add(createdAt);
+                                              _selectedTripIds.add(tripId);
                                             } else {
-                                              _selectedTripIds.remove(createdAt);
+                                              _selectedTripIds.remove(tripId);
                                               if (_selectedTripIds.isEmpty) {
                                                 _isSelectionMode = false;
                                               }
@@ -640,90 +621,27 @@ class _SavedScreenState extends State<SavedScreen> {
 
   Future<void> _updateTripName(int index, String newName) async {
     try {
-      if (index < 0 || index >= _savedTrips.length) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Invalid trip index',
-                style: GoogleFonts.poppins(),
+      if (index < 0 || index >= _savedTrips.length) return;
+      
+      final trip = _savedTrips[index];
+      final tripId = trip['id'] as String?;
+      
+      if (tripId != null) {
+          await _tripService.updateTripName(tripId, newName);
+          await _loadSavedTrips();
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Trip name updated',
+                  style: GoogleFonts.poppins(),
+                ),
+                backgroundColor: Colors.green,
+                duration: const Duration(seconds: 2),
               ),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        }
-        return;
-      }
-      
-      final tripToUpdate = _savedTrips[index];
-      final tripToUpdateCreatedAt = tripToUpdate['createdAt'] as String?;
-      
-      if (tripToUpdateCreatedAt == null) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Trip data is invalid',
-                style: GoogleFonts.poppins(),
-              ),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        }
-        return;
-      }
-      
-      final prefs = await SharedPreferences.getInstance();
-      final savedTrips = prefs.getStringList('saved_trips') ?? [];
-      
-      bool tripFound = false;
-      
-      // Find and update the trip by matching createdAt timestamp
-      for (int i = 0; i < savedTrips.length; i++) {
-        try {
-          final trip = jsonDecode(savedTrips[i]) as Map<String, dynamic>;
-          if (trip['createdAt'] == tripToUpdateCreatedAt) {
-            trip['tripName'] = newName;
-            savedTrips[i] = jsonEncode(trip);
-            tripFound = true;
-            break;
+            );
           }
-        } catch (e) {
-          continue;
-        }
-      }
-      
-      if (tripFound) {
-        await prefs.setStringList('saved_trips', savedTrips);
-        await _loadSavedTrips();
-        
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Trip name updated',
-                style: GoogleFonts.poppins(),
-              ),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        }
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Trip not found',
-                style: GoogleFonts.poppins(),
-              ),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        }
       }
     } catch (e) {
       if (mounted) {

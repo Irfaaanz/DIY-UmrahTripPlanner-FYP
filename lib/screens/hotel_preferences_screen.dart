@@ -39,6 +39,19 @@ class _HotelPreferencesScreenState extends State<HotelPreferencesScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
+
+    final Map<String, String> hotelPrefDisplay = {
+      'Luxury': l10n.luxury,
+      'Premium': l10n.premium,
+      'Standard': l10n.standard,
+      'Economy': l10n.economy,
+    };
+
+    final Map<String, String> hotelDistDisplay = {
+      'Very Near': l10n.veryNear,
+      'Near': l10n.near,
+      'Far': l10n.far,
+    };
     
     // Valid if hotel pref and distance are selected. Room type is removed from UI.
     final bool canProceed = _hotelPreference != null && _hotelDistance != null;
@@ -125,6 +138,7 @@ class _HotelPreferencesScreenState extends State<HotelPreferencesScreen> {
                 hintText: l10n.pickHotelPref,
                 value: _hotelPreference,
                 items: _hotelPreferences,
+                displayMap: hotelPrefDisplay,
                 onChanged: (value) {
                   setState(() {
                     _hotelPreference = value;
@@ -138,6 +152,7 @@ class _HotelPreferencesScreenState extends State<HotelPreferencesScreen> {
                 hintText: l10n.pickHotelDist,
                 value: _hotelDistance,
                 items: _hotelDistances,
+                displayMap: hotelDistDisplay,
                 onChanged: (value) {
                   setState(() {
                     _hotelDistance = value;
@@ -206,6 +221,7 @@ class _HotelPreferencesScreenState extends State<HotelPreferencesScreen> {
     required String hintText,
     required String? value,
     required List<String> items,
+    required Map<String, String> displayMap,
     required ValueChanged<String?> onChanged,
   }) {
     final theme = Theme.of(context);
@@ -251,7 +267,7 @@ class _HotelPreferencesScreenState extends State<HotelPreferencesScreen> {
                 return DropdownMenuItem<String>(
                   value: item,
                   child: Text(
-                    item,
+                    displayMap[item] ?? item,
                     style: GoogleFonts.montserrat(
                       fontSize: 16,
                       fontWeight: FontWeight.w400,

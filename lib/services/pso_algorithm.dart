@@ -62,19 +62,30 @@ class PsoAlgorithm {
   /// Main execution method
   Future<Map<String, dynamic>> run() async {
     // 1. Prepare Data
-    // Filter by Type (Direct/Transit) first
-    List<Map<String, dynamic>> typeFiltered = dataService.getFlights().where((f) => f['type'].toString().toLowerCase() == flightPref.toLowerCase()).toList();
     
-    // Then Filter by Service Type (Full Service/Low Cost) using new CSV column
-    _flights = typeFiltered.where((f) => _isServiceTypeMatch(f['service_type'].toString(), serviceTypePref)).toList();
+    // Strict Filtering Logic for Flights (Smarter Fallback)
+    // Priority 1: Exact Match (Type + Service)
+    // Priority 2: Service Match (Allow any Type) - e.g. User wants "Full Service Direct", none found -> give "Full Service Transit" (Better than AirAsia)
+    // Priority 3: Type Match (Allow any Service) - e.g. User wants "Direct Full Service", none found -> give "Direct LCC"
+    // Priority 4: All Flights
     
-    if (_flights.isEmpty) {
-       // Fallback 1: Try ignoring service type, just keep flight type
-       _flights = typeFiltered;
-    }
-    if (_flights.isEmpty) {
-       // Fallback 2: All flights
-       _flights = dataService.getFlights();
+    List<Map<String, dynamic>> allFlights = dataService.getFlights();
+    
+    // Soft Filtering for Flights: 
+    // We filter primarily by Type (Direct vs Transit) to ensure the basic structure of the trip is correct.
+    // We do NOT strictly filter by "Service Type" (Full Service vs LCC) here.
+    // Instead, we include ALL service types and let the fitness function penalize the wrong one.
+    // This allows the algorithm to pick "Low Cost" if "Full Service" is too expensive (Over Budget).
+    
+    List<Map<String, dynamic>> typeMatch = allFlights.where((f) {
+       return f['type'].toString().toLowerCase() == flightPref.toLowerCase();
+    }).toList();
+    
+    if (typeMatch.isNotEmpty) {
+      _flights = typeMatch;
+    } else {
+      // Fallback: If no flights of preferred type exist, use all flights (better than crashing)
+      _flights = allFlights;
     }
     
     // Strict Filtering for Hotels (Star Rating & Distance)
@@ -119,18 +130,25 @@ class PsoAlgorithm {
       throw Exception("Insufficient data to run optimization");
     }
 
+    // STRICT Search Space for Transport & Expenses
+    // Instead of 0,1,2 range, we restrict the bounds to 1 if a specific preference is set.
+    // We map the particle index [0] to the specific tier index.
+    
+    List<int> availableTransportTiers = _getAvailableTransportTiers(transportPref);
+    List<int> availableExpenseTiers = _getAvailableExpenseTiers(expensesPref);
+
     // Bounds for dimensions
     // 0: Flight ID
     // 1: Hotel Makkah
     // 2: Hotel Madinah
-    // 3: Transport Tier (0=Low, 1=Medium, 2=High)
-    // 4: Expense Tier (0=Low, 1=Medium, 2=High)
+    // 3: Transport Tier Index (Relative to availableTransportTiers)
+    // 4: Expense Tier Index (Relative to availableExpenseTiers)
     List<int> bounds = [
       _flights.length,
       _hotelsMakkah.length,
       _hotelsMadinah.length,
-      3, // 0,1,2
-      3  // 0,1,2
+      availableTransportTiers.length, 
+      availableExpenseTiers.length 
     ];
 
     // 2. Initialize Swarm
@@ -147,7 +165,7 @@ class PsoAlgorithm {
 
       for (var p in swarm) {
         // Evaluate Fitness
-        double fitness = _calculateFitness(p.position);
+        double fitness = _calculateFitness(p.position, availableTransportTiers, availableExpenseTiers);
         p.currentValue = fitness;
 
         // Update PBest
@@ -185,16 +203,41 @@ class PsoAlgorithm {
     }
 
     // 4. Decode GBest
-    return _decodeSolution(gBestPosition, gBestValue);
+    return _decodeSolution(gBestPosition, gBestValue, availableTransportTiers, availableExpenseTiers);
   }
 
-  double _calculateFitness(List<double> position) {
+  // Helper to map preference string to allowed tier indices [0=Min, 1=Mod, 2=Comf]
+  List<int> _getAvailableTransportTiers(String pref) {
+     String p = pref.toLowerCase();
+     if (p == 'comfortable') return [2];
+     if (p == 'moderate') return [1];
+     if (p == 'minimal') return [0];
+     return [0, 1, 2]; // Fallback allow all if unknown
+  }
+  
+  // Helper to map preference string to allowed tier indices [0=Low, 1=Med, 2=High]
+  List<int> _getAvailableExpenseTiers(String pref) {
+     String p = pref.toLowerCase();
+     if (p == 'comfortable' || p == 'high') return [2];
+     if (p == 'moderate' || p == 'medium') return [1];
+     if (p == 'minimal' || p == 'low') return [0];
+     return [0, 1, 2];
+  }
+
+  double _calculateFitness(List<double> position, List<int> validTransTiers, List<int> validExpTiers) {
     // Discrete indices
     int flightIdx = position[0].toInt();
     int makkahIdx = position[1].toInt();
     int madinahIdx = position[2].toInt();
-    int transportTier = position[3].toInt(); // 0,1,2
-    int expenseTier = position[4].toInt();   // 0,1,2
+    
+    // Map particle index to REAL tier index
+    int transIdx = position[3].toInt();
+    if (transIdx >= validTransTiers.length) transIdx = validTransTiers.length - 1;
+    int realTransportTier = validTransTiers[transIdx];
+    
+    int expIdx = position[4].toInt();
+    if (expIdx >= validExpTiers.length) expIdx = validExpTiers.length - 1;
+    int realExpenseTier = validExpTiers[expIdx];
     
     // Safety check just in case
     if (flightIdx >= _flights.length) flightIdx = _flights.length - 1;
@@ -209,8 +252,7 @@ class PsoAlgorithm {
     double cAccom = (rateMakkah * daysMakkah) + (rateMadinah * daysMadinah);
 
     // Transport Cost
-    // Mapping Tier 0->Minimal, 1->Moderate, 2->Comfortable
-    String transTier = _getTransportTierName(transportTier);
+    String transTier = _getTransportTierName(realTransportTier);
     
     double cArrival = dataService.getArrivalCost(transTier);
     double cMakkahInternal = dataService.getInternalCost('Makkah', transTier) * daysMakkah;
@@ -221,7 +263,7 @@ class PsoAlgorithm {
     double cTransport = cArrival + cMakkahInternal + cInterCity + cMadinahInternal + cDeparture;
 
     // Expenses Cost
-    String expType = _getExpenseTypeFromTier(expenseTier); // Low, Medium, High
+    String expType = _getExpenseTypeFromTier(realExpenseTier); // Low, Medium, High
     double dailyRate = dataService.getDailyExpenses(expType);
     double cDaily = dailyRate * (daysMakkah + daysMadinah);
 
@@ -229,26 +271,29 @@ class PsoAlgorithm {
 
     // --- Penalties ---
     
-    // --- Penalties ---
-    
+    // 1. Budget Constraint
+    double penalty = 0.0;
+
     // 1. Budget Constraint
     if (totalCost > budget) {
       // Add heavy penalty
-      return totalCost + 10000.0;
+      penalty += 10000.0;
     }
+    
+    // 2. Service Type Mismatch (Soft Constraint)
+    // If user wants "Full Service" but we picked "Low Cost" (or vice versa), add a moderate penalty.
+    // This ensures we prefer the correct service type if it fits in budget, 
+    // but if the correct one pushes us Over Budget (+10000), we prefer the wrong one (+2000).
+    String flightService = _flights[flightIdx]['service_type'].toString();
+    if (!_isServiceTypeMatch(flightService, serviceTypePref)) {
+       penalty += 2000.0;
+    }
+    
+    return totalCost + penalty;
     
     // 2. Preference Mismatch Penalty (Strong Constraint)
-    // We increased this from 500 to 10000 to ensure strict adherence unless absolutely impossible
-    
-    // Transport Check
-    if (transTier.toLowerCase() != transportPref.toLowerCase()) {
-       totalCost += 10000.0;
-    }
-    
-    // Expense Check
-    if (!_isExpenseMatch(expType, expensesPref)) {
-       totalCost += 10000.0;
-    }
+    // Note: With strict bounds, Transport/Expense mismatch is now impossible provided logic is correct.
+    // We can remove those penalties or keep them as sanity checks.
     
     // 3. Hotel Star Rating Penalty (Secondary Check)
     // Even though we filtered the list, if fallback occurred, this penalty helps.
@@ -303,27 +348,16 @@ class PsoAlgorithm {
     if (p.contains('luxury')) return stars == 5;
     if (p.contains('premium')) return stars == 4;
     // Note: Standard could be 3, but user said "Standard 3*". 
-    if (p.contains('standard')) return stars == 3;
+    // Optimization: Allow <= 3 so if 3* is too expensive, it picks 2* (Economy) to save budget.
+    if (p.contains('standard')) return stars <= 3;
     if (p.contains('economy')) return stars <= 2;
     
     return true; // Unknown preference, accept all
   }
   
-  bool _isExpenseMatch(String particleType, String userPref) {
-      // particleType: Low, Medium, High
-      // userPref: Low, Medium, High (from previous screen mapping)
-      // or "Minimal, Moderate, Comfortable"
-      
-      // Normalize
-      String p = particleType.toLowerCase();
-      String u = userPref.toLowerCase();
-      
-      if (p == 'low' && (u == 'low' || u == 'minimal')) return true;
-      if (p == 'medium' && (u == 'medium' || u == 'moderate')) return true;
-      if (p == 'high' && (u == 'high' || u == 'comfortable')) return true;
-      
-      return false;
-  }
+  // Method no longer needed for check, but keeping for structural integrity if referenced? 
+  // No, logic is updated to use bounds.
+  // bool _isExpenseMatch... removed/unused
 
   String _getTransportTierName(int tier) {
      switch(tier) {
@@ -338,11 +372,15 @@ class PsoAlgorithm {
       // flightServiceType: 'LCC' or 'non-LCC' (from CSV)
       // pref: "Full Service", "Low Cost"
       
-      if (pref.toLowerCase().contains('low cost')) {
-          return flightServiceType == 'LCC';
+      String type = flightServiceType.toLowerCase().trim();
+      String p = pref.toLowerCase();
+
+      if (p.contains('low cost')) {
+          // LCC Match
+          return type == 'lcc';
       } else {
-          // "Full Service"
-          return flightServiceType == 'non-LCC';
+          // "Full Service" Match
+          return type == 'non-lcc';
       }
   }
 
@@ -355,19 +393,25 @@ class PsoAlgorithm {
      }
   }
 
-  Map<String, dynamic> _decodeSolution(List<double> position, double cost) {
+  Map<String, dynamic> _decodeSolution(List<double> position, double cost, List<int> validTransTiers, List<int> validExpTiers) {
     int flightIdx = position[0].toInt();
     int makkahIdx = position[1].toInt();
     int madinahIdx = position[2].toInt();
-    int transportTier = position[3].toInt();
-    int expenseTier = position[4].toInt();
+    
+    int transIdx = position[3].toInt();
+    if (transIdx >= validTransTiers.length) transIdx = validTransTiers.length - 1;
+    int realTransportTier = validTransTiers[transIdx];
+    
+    int expIdx = position[4].toInt();
+    if (expIdx >= validExpTiers.length) expIdx = validExpTiers.length - 1;
+    int realExpenseTier = validExpTiers[expIdx];
     
     // Check bounds again to be safe
     if (flightIdx >= _flights.length) flightIdx = _flights.length - 1;
     if (makkahIdx >= _hotelsMakkah.length) makkahIdx = _hotelsMakkah.length - 1;
     if (madinahIdx >= _hotelsMadinah.length) madinahIdx = _hotelsMadinah.length - 1;
     
-    String transTier = _getTransportTierName(transportTier);
+    String transTier = _getTransportTierName(realTransportTier);
 
     return {
       'totalCost': cost > budget ? cost - 10000 : cost, // Remove penalty for display
@@ -383,7 +427,7 @@ class PsoAlgorithm {
          'makkahDaily': dataService.getInternalCost('Makkah', transTier),
          'madinahDaily': dataService.getInternalCost('Madinah', transTier),
       },
-      'expenses': _getExpenseTypeFromTier(expenseTier),
+      'expenses': _getExpenseTypeFromTier(realExpenseTier),
       'savings': budget - (cost > budget ? cost - 10000 : cost),
     };
   }

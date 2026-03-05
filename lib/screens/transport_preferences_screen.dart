@@ -43,6 +43,13 @@ class _TransportPreferencesScreenState extends State<TransportPreferencesScreen>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
+    
+    final Map<String, String> transportPrefDisplay = {
+      'Comfortable': l10n.comfortable,
+      'Moderate': l10n.moderate,
+      'Minimal': l10n.minimal,
+    };
+
     final bool canProceed = _transportPreference != null;
 
     return Scaffold(
@@ -156,7 +163,7 @@ class _TransportPreferencesScreenState extends State<TransportPreferencesScreen>
                       return DropdownMenuItem<String>(
                         value: item,
                         child: Text(
-                          item,
+                          transportPrefDisplay[item] ?? item,
                           style: GoogleFonts.montserrat(
                             fontSize: 16,
                             fontWeight: FontWeight.w400,
