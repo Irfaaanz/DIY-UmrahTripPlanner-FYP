@@ -32,6 +32,9 @@ To optimize Umrah trip planning based on user budget and preferences using Parti
 - Python (PSO)
 - GitHub
 
-#Apps credentials
+## Live Demo Application
+- [Live Demo](https://diy-umrah-fyp.web.app/)
+
+## Apps credentials
 - Email: fan@gmail.com
 - Password: fanh1234
