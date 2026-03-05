@@ -38,3 +38,6 @@ To optimize Umrah trip planning based on user budget and preferences using Parti
 ## Apps credentials
 - Email: fan@gmail.com
 - Password: fanh1234
+
+## Documentation
+- [Documentation](https://drive.google.com/drive/folders/1oOyAPwqZ47Ta7amUhuUCjkT0j2brjcIt)
