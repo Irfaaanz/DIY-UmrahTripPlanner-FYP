@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'home_screen.dart';
 import 'my_trips_screen.dart';
+import '../l10n/generated/app_localizations.dart';
 import 'saved_screen.dart';
 import 'profile_screen.dart';
 
@@ -50,16 +51,20 @@ class _MainNavigationState extends State<MainNavigation> {
   }
 
   Widget _buildBottomNavigationBar() {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
+    
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFE3F2FD), // Light blue background
+        color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFE3F2FD), // Dark or Light blue bg
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
+            color: Colors.grey.withOpacity(0.1),
             spreadRadius: 1,
             blurRadius: 8,
             offset: const Offset(0, -2),
@@ -73,10 +78,10 @@ class _MainNavigationState extends State<MainNavigation> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(Icons.home_outlined, 'Home', 0),
-              _buildNavItem(Icons.luggage_outlined, 'My Trips', 1),
-              _buildNavItem(Icons.bookmark_outline, 'Saved', 2),
-              _buildNavItem(Icons.person_outline, 'Profile', 3),
+              _buildNavItem(Icons.home_outlined, l10n.home, 0),
+              _buildNavItem(Icons.luggage_outlined, l10n.myTrips, 1),
+              _buildNavItem(Icons.bookmark_outline, l10n.saved, 2),
+              _buildNavItem(Icons.person_outline, l10n.profile, 3),
             ],
           ),
         ),
@@ -86,6 +91,10 @@ class _MainNavigationState extends State<MainNavigation> {
 
   Widget _buildNavItem(IconData icon, String label, int index) {
     final isSelected = _currentIndex == index;
+    final theme = Theme.of(context);
+    // Use theme colors for text/icon
+    final color = theme.textTheme.bodyLarge?.color ?? Colors.black87;
+    
     return GestureDetector(
       onTap: () {
         _changeTab(index);
@@ -98,7 +107,7 @@ class _MainNavigationState extends State<MainNavigation> {
           children: [
             Icon(
               icon,
-              color: Colors.black87,
+              color: color,
               size: 22,
             ),
             const SizedBox(height: 2),
@@ -107,7 +116,7 @@ class _MainNavigationState extends State<MainNavigation> {
               style: GoogleFonts.poppins(
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                color: Colors.black87,
+                color: color,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

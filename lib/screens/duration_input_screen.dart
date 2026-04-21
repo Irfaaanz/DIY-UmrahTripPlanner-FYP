@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'hotel_preferences_screen.dart';
+import '../l10n/generated/app_localizations.dart';
 
 class DurationInputScreen extends StatefulWidget {
   final String tripName;
@@ -19,29 +20,54 @@ class DurationInputScreen extends StatefulWidget {
 }
 
 class _DurationInputScreenState extends State<DurationInputScreen> {
-  final TextEditingController _durationController = TextEditingController();
-  int? _duration;
+  final TextEditingController _makkahDaysController = TextEditingController();
+  final TextEditingController _madinahDaysController = TextEditingController();
+  
+  int? _makkahDays;
+  int? _madinahDays;
+  int? _totalDuration;
   bool _showMaxDaysWarning = false;
 
   @override
   void dispose() {
-    _durationController.dispose();
+    _makkahDaysController.dispose();
+    _madinahDaysController.dispose();
     super.dispose();
+  }
+  
+  void _calculateTotal() {
+    setState(() {
+      _makkahDays = int.tryParse(_makkahDaysController.text);
+      _madinahDays = int.tryParse(_madinahDaysController.text);
+      
+      if (_makkahDays != null && _madinahDays != null) {
+        _totalDuration = _makkahDays! + _madinahDays!;
+        _showMaxDaysWarning = _totalDuration! < 5 || _totalDuration! > 14;
+      } else {
+        _totalDuration = (int.tryParse(_makkahDaysController.text) ?? 0) + 
+                         (int.tryParse(_madinahDaysController.text) ?? 0);
+        if (_totalDuration == 0) _totalDuration = null;
+        _showMaxDaysWarning = false; 
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.only(left: 8.0),
           child: IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.arrow_back_ios,
-              color: Colors.black,
+              color: theme.iconTheme.color,
               size: 20,
             ),
             onPressed: () {
@@ -51,11 +77,11 @@ class _DurationInputScreenState extends State<DurationInputScreen> {
         ),
         centerTitle: true,
         title: Text(
-          'Personalise My Trips',
+          l10n.personaliseMyTrips,
           style: GoogleFonts.montserrat(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: Colors.black,
+            color: theme.textTheme.titleLarge?.color,
           ),
         ),
       ),
@@ -69,44 +95,38 @@ class _DurationInputScreenState extends State<DurationInputScreen> {
               // Progress bar
               _buildProgressBar(3, 8),
               const SizedBox(height: 32),
-              // Main heading - full width
+              // Main heading
               Text(
-                "Let's start your Umrah journey with us",
+                l10n.letsStartJourney,
                 style: GoogleFonts.montserrat(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black,
+                  color: theme.textTheme.titleLarge?.color,
                 ),
               ),
               const SizedBox(height: 24),
-              // Duration title with history icon aligned to the right
+              
+              // Duration title with clock icon
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Insert your journey",
+                          l10n.insertJourneyDuration,
                           style: GoogleFonts.poppins(
                             fontSize: 32,
                             fontWeight: FontWeight.w500,
-                            color: Colors.black,
-                          ),
-                        ),
-                        Text(
-                          "duration",
-                          style: GoogleFonts.poppins(
-                            fontSize: 32,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black,
+                            color: theme.textTheme.titleLarge?.color,
+                            height: 1.1,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 16),
                   Image.asset(
                     'assets/icons/history.png',
                     width: 70,
@@ -114,79 +134,37 @@ class _DurationInputScreenState extends State<DurationInputScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
-              // Duration input field
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child: Image.asset(
-                      'assets/icons/calendar.png',
-                      width: 24,
-                      height: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: TextField(
-                      controller: _durationController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        hintText: 'No. of days',
-                        hintStyle: GoogleFonts.poppins(
-                          fontSize: 16,
-                          color: Colors.grey[400],
-                        ),
-                        border: UnderlineInputBorder(
-                          borderSide: BorderSide(
-                            color: Colors.grey[300]!,
-                            width: 1,
-                          ),
-                        ),
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(
-                            color: Colors.grey[300]!,
-                            width: 1,
-                          ),
-                        ),
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(
-                            color: Colors.grey[400]!,
-                            width: 1.5,
-                          ),
-                        ),
-                      ),
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        color: Colors.black87,
-                      ),
-                      onChanged: (value) {
-                        if (value.isNotEmpty) {
-                          final parsedDuration = int.tryParse(value);
-                          setState(() {
-                            _duration = parsedDuration;
-                            _showMaxDaysWarning = parsedDuration != null && parsedDuration < 5 && parsedDuration > 14;
-                          });
-                        } else {
-                          setState(() {
-                            _duration = null;
-                            _showMaxDaysWarning = false;
-                          });
-                        }
-                      },
-                    ),
-                  ),
-                ],
+              const SizedBox(height: 32),
+
+              // Makkah Days Input
+              _buildDayInputRow(
+                controller: _makkahDaysController,
+                iconPath: 'assets/icons/calendar.png',
+                hintText: l10n.daysInMakkah,
+                onChanged: (_) => _calculateTotal(),
               ),
-              const SizedBox(height: 16),
+              
+              const SizedBox(height: 20),
+              
+              // Madinah Days Input
+              _buildDayInputRow(
+                controller: _madinahDaysController,
+                iconPath: 'assets/icons/calendar.png', 
+                hintText: l10n.daysInMadinah,
+                 onChanged: (_) => _calculateTotal(),
+              ),
+              
+               const SizedBox(height: 16),
+               Divider(color: theme.dividerColor),
+               const SizedBox(height: 8),
+
               // Total days display
               Text(
-                'Total days: ${_duration ?? 0} ${_duration == 1 ? 'day' : 'days'}',
+                l10n.totalDays(_totalDuration ?? 0),
                 style: GoogleFonts.montserrat(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: Colors.black87,
+                  color: theme.textTheme.bodyLarge?.color,
                 ),
               ),
               // Maximum days warning
@@ -194,7 +172,7 @@ class _DurationInputScreenState extends State<DurationInputScreen> {
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
-                    'The minimum days is 5 days and maximum days is 14 days',
+                    l10n.durationWarning,
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
@@ -209,7 +187,7 @@ class _DurationInputScreenState extends State<DurationInputScreen> {
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _duration != null && _duration! > 0 && _duration! <= 14
+                    onPressed: (_totalDuration != null && _totalDuration! >= 5 && _totalDuration! <= 14)
                         ? () {
                             // Navigate to hotel preferences screen
                             Navigator.of(context).push(
@@ -218,30 +196,28 @@ class _DurationInputScreenState extends State<DurationInputScreen> {
                                   tripName: widget.tripName,
                                   age: widget.age,
                                   budget: widget.budget,
-                                  duration: _duration!,
+                                  duration: _totalDuration!,
+                                  daysMakkah: _makkahDays!,
+                                  daysMadinah: _madinahDays!,
                                 ),
                               ),
                             );
                           }
                         : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _duration != null && _duration! > 0
-                          ? const Color(0xFFE3F2FD)
-                          : Colors.grey[300],
+                      backgroundColor: const Color(0xFF64D2FF), // Cyan
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(30),
                       ),
                       elevation: 0,
                     ),
                     child: Text(
-                      'Proceed',
+                      l10n.proceed,
                       style: GoogleFonts.montserrat(
                         fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: _duration != null && _duration! > 0
-                            ? Colors.black87
-                            : Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black87, // Keep black for contrast on Cyan
                       ),
                     ),
                   ),
@@ -251,6 +227,51 @@ class _DurationInputScreenState extends State<DurationInputScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildDayInputRow({
+    required TextEditingController controller, 
+    required String iconPath, 
+    required String hintText,
+    required ValueChanged<String> onChanged,
+  }) {
+    final theme = Theme.of(context);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(right: 12),
+          child: Image.asset(
+            iconPath,
+            width: 24,
+            height: 24,
+             color: theme.iconTheme.color,
+          ),
+        ),
+        Expanded(
+          child: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              hintText: hintText,
+              hintStyle: GoogleFonts.poppins(
+                fontSize: 16,
+                color: theme.hintColor,
+              ),
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              contentPadding: EdgeInsets.zero,
+            ),
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              color: theme.textTheme.bodyLarge?.color,
+            ),
+             onChanged: onChanged,
+          ),
+        ),
+      ],
     );
   }
 

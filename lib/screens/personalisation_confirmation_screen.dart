@@ -4,6 +4,8 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'main_navigation.dart';
+import '../services/trip_service.dart';
+import '../l10n/generated/app_localizations.dart';
 
 class PersonalisationConfirmationScreen extends StatefulWidget {
   final String tripName;
@@ -13,8 +15,11 @@ class PersonalisationConfirmationScreen extends StatefulWidget {
   final String hotelPreference;
   final String hotelDistance;
   final String roomType;
+  final String transportPreference;
   final String flightPreference;
+  final String serviceTypePreference;
   final String dailyExpensesPreference;
+  final Map<String, dynamic> optimizationResult;
 
   const PersonalisationConfirmationScreen({
     super.key,
@@ -25,8 +30,11 @@ class PersonalisationConfirmationScreen extends StatefulWidget {
     required this.hotelPreference,
     required this.hotelDistance,
     required this.roomType,
+    required this.transportPreference,
     required this.flightPreference,
+    required this.serviceTypePreference,
     required this.dailyExpensesPreference,
+    required this.optimizationResult,
   });
 
   @override
@@ -37,6 +45,8 @@ class _PersonalisationConfirmationScreenState extends State<PersonalisationConfi
   bool _isSaved = false;
   String? _tripCreatedAt;
 
+  final TripService _tripService = TripService();
+
   @override
   void initState() {
     super.initState();
@@ -44,104 +54,64 @@ class _PersonalisationConfirmationScreenState extends State<PersonalisationConfi
   }
 
   Future<void> _initializeData() async {
-    await _checkIfSaved();
-    // Auto-save trip when confirmation screen appears (silently)
+    // Attempt auto-save
     await _autoSaveTrip();
   }
 
   Future<void> _autoSaveTrip() async {
     try {
-      // Check if trip already exists
-      final prefs = await SharedPreferences.getInstance();
-      final savedTrips = prefs.getStringList('saved_trips') ?? [];
+      final tripData = _getTripData();
       
-      // Check if a trip with the same data already exists
-      bool tripExists = false;
-      String? existingCreatedAt;
+      // Check duplicate using TripService
+      // Note: This is an optimization. We could just save new every time, 
+      // but to prevent spamming copies on re-entry:
+      // (For now, let's keep it simple: Add NEW trip every time user lands here? 
+      // No, that's bad UX if they back/forth. 
+      // Ideally, pass a tripId if editing, or check similar.
+      // Since our new service doesn't easily check identical content without complexity,
+      // We will rely on the fact the user just came from 'Optimize' flow.
+      // Let's TRY to find duplicate locally in the loaded list? 
+      // Actually, TripService.findDuplicateTrip is implemented.)
       
-      for (final tripJson in savedTrips) {
-        try {
-          final trip = jsonDecode(tripJson) as Map<String, dynamic>;
-          if (trip['age'] == widget.age &&
-              trip['budget'] == widget.budget &&
-              trip['duration'] == widget.duration &&
-              trip['hotelPreference'] == widget.hotelPreference &&
-              trip['hotelDistance'] == widget.hotelDistance &&
-              trip['roomType'] == widget.roomType &&
-              trip['flightPreference'] == widget.flightPreference &&
-              trip['dailyExpensesPreference'] == widget.dailyExpensesPreference) {
-            tripExists = true;
-            existingCreatedAt = trip['createdAt'] as String;
-            break;
-          }
-        } catch (e) {
-          continue;
-        }
-      }
-      
-      if (!tripExists) {
-        // Create new trip with new timestamp
-        final tripData = _getTripData();
-        if (_tripCreatedAt == null) {
-          tripData['createdAt'] = DateTime.now().toIso8601String();
-        }
-        final tripJson = jsonEncode(tripData);
-        savedTrips.add(tripJson);
-        await prefs.setStringList('saved_trips', savedTrips);
-        
-        setState(() {
-          _isSaved = true;
-          _tripCreatedAt = tripData['createdAt'] as String;
-        });
+      final String? existingTripId = await _tripService.findDuplicateTrip(tripData);
+
+      if (existingTripId == null) {
+         // Create new
+         if (_tripCreatedAt == null) {
+            tripData['createdAt'] = DateTime.now().toIso8601String();
+         }
+         await _tripService.saveTrip(tripData);
+         
+         if (mounted) {
+            setState(() {
+              _isSaved = true;
+              _tripCreatedAt = tripData['createdAt'] as String;
+            });
+         }
       } else {
-        // Trip already exists, update state
-        setState(() {
-          _isSaved = true;
-          _tripCreatedAt = existingCreatedAt;
-        });
+         // Exists
+         if (mounted) {
+            setState(() {
+              _isSaved = true;
+              // We don't easily get the created date of the existing one without fetching details
+              // but that's okay, UI just needs to show "Saved".
+            });
+         }
       }
     } catch (e) {
-      // Silent fail for auto-save
+      // Log error but don't show snackbar for auto-save to ensure smooth UX
+      // unless it's critical.
+      debugPrint("Auto-save failed: $e");
     }
   }
 
+  // Not strictly needed if _autoSaveTrip covers it, but kept for manual check scenarios if any
   Future<void> _checkIfSaved() async {
-    // Check if this trip is already saved by comparing trip data
-    final prefs = await SharedPreferences.getInstance();
-    final savedTrips = prefs.getStringList('saved_trips') ?? [];
-    
-    // Compare trips by all fields (excluding timestamp)
-    bool found = false;
-    String? existingCreatedAt;
-    
-    for (final tripJson in savedTrips) {
-      try {
-        final trip = jsonDecode(tripJson) as Map<String, dynamic>;
-        if (trip['age'] == widget.age &&
-            trip['budget'] == widget.budget &&
-            trip['duration'] == widget.duration &&
-            trip['hotelPreference'] == widget.hotelPreference &&
-            trip['hotelDistance'] == widget.hotelDistance &&
-            trip['roomType'] == widget.roomType &&
-            trip['flightPreference'] == widget.flightPreference &&
-            trip['dailyExpensesPreference'] == widget.dailyExpensesPreference) {
-          found = true;
-          existingCreatedAt = trip['createdAt'] as String;
-          break;
-        }
-      } catch (e) {
-        continue;
-      }
-    }
-    
-    setState(() {
-      _isSaved = found;
-      _tripCreatedAt = existingCreatedAt;
-    });
+     // For Firestore, this is expensive to check on every load if we assume specific logic.
+     // _autoSaveTrip already handles the "Check & Save" logic.
   }
 
   Map<String, dynamic> _getTripData() {
-    // Use existing timestamp if trip was already saved, otherwise create new one
     return {
       'tripName': widget.tripName,
       'age': widget.age,
@@ -150,107 +120,56 @@ class _PersonalisationConfirmationScreenState extends State<PersonalisationConfi
       'hotelPreference': widget.hotelPreference,
       'hotelDistance': widget.hotelDistance,
       'roomType': widget.roomType,
+      'transportPreference': widget.transportPreference,
       'flightPreference': widget.flightPreference,
+      'serviceTypePreference': widget.serviceTypePreference,
       'dailyExpensesPreference': widget.dailyExpensesPreference,
+      'optimizationResult': widget.optimizationResult,
       'createdAt': _tripCreatedAt ?? DateTime.now().toIso8601String(),
     };
   }
 
   Future<void> _saveTrip() async {
+    // Manual save invoked by Share mostly
+    final l10n = AppLocalizations.of(context)!;
+    
     try {
-      // Check if trip already exists by comparing age, budget, and duration
-      final prefs = await SharedPreferences.getInstance();
-      final savedTrips = prefs.getStringList('saved_trips') ?? [];
-      
-      // Check if a trip with the same data already exists
-      bool tripExists = false;
-      String? existingCreatedAt;
-      
-      for (final tripJson in savedTrips) {
-        try {
-          final trip = jsonDecode(tripJson) as Map<String, dynamic>;
-          if (trip['age'] == widget.age &&
-              trip['budget'] == widget.budget &&
-              trip['duration'] == widget.duration &&
-              trip['hotelPreference'] == widget.hotelPreference &&
-              trip['hotelDistance'] == widget.hotelDistance &&
-              trip['roomType'] == widget.roomType &&
-              trip['flightPreference'] == widget.flightPreference &&
-              trip['dailyExpensesPreference'] == widget.dailyExpensesPreference) {
-            tripExists = true;
-            existingCreatedAt = trip['createdAt'] as String;
-            break;
-          }
-        } catch (e) {
-          continue;
-        }
+      if (_isSaved) {
+         if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(l10n.tripAlreadySaved),
+                backgroundColor: Colors.orange,
+              ),
+            );
+         }
+         return;
       }
       
-      if (!tripExists) {
-        // Create new trip with new timestamp
-        final tripData = _getTripData();
-        // If we don't have an existing timestamp, generate a new one
-        if (_tripCreatedAt == null) {
-          tripData['createdAt'] = DateTime.now().toIso8601String();
-        }
-        final tripJson = jsonEncode(tripData);
-        savedTrips.add(tripJson);
-        await prefs.setStringList('saved_trips', savedTrips);
-        
-        setState(() {
-          _isSaved = true;
-          _tripCreatedAt = tripData['createdAt'] as String;
-        });
-        
-        if (mounted) {
+      await _autoSaveTrip(); // Re-use logic
+      
+      if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                'Trip saved successfully!',
-                style: GoogleFonts.poppins(),
-              ),
+              content: Text(l10n.tripSavedSuccess),
               backgroundColor: Colors.green,
-              duration: const Duration(seconds: 2),
             ),
           );
-        }
-      } else {
-        // Trip already exists, update the state to reflect this
-        setState(() {
-          _isSaved = true;
-          _tripCreatedAt = existingCreatedAt;
-        });
-        
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Trip already saved!',
-                style: GoogleFonts.poppins(),
-              ),
-              backgroundColor: Colors.orange,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        }
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Error saving trip: $e',
-              style: GoogleFonts.poppins(),
+       if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.errorSavingTrip(e.toString())),
+              backgroundColor: Colors.red,
             ),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
+          );
+       }
     }
   }
 
   Future<void> _shareTrip() async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       // Save trip data first
       await _saveTrip();
@@ -264,8 +183,9 @@ Age: ${widget.age} years old
 Budget: RM $budgetFormatted
 Duration: ${widget.duration} ${widget.duration == 1 ? 'day' : 'days'}
 
-Hotel: ${widget.hotelPreference} - ${widget.hotelDistance} - ${widget.roomType}
-Flight: ${widget.flightPreference}
+Hotel: ${widget.hotelPreference} - ${widget.hotelDistance}
+Transport: ${widget.transportPreference}
+Flight: ${widget.flightPreference} (${widget.serviceTypePreference})
 Daily Expenses: ${widget.dailyExpensesPreference}
 
 Created with Umrah Trip Planner
@@ -281,7 +201,7 @@ Created with Umrah Trip Planner
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Error sharing trip: $e',
+              l10n.errorSharingTrip(e.toString()),
               style: GoogleFonts.poppins(),
             ),
             backgroundColor: Colors.red,
@@ -304,17 +224,21 @@ Created with Umrah Trip Planner
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.only(left: 8.0),
           child: IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.arrow_back_ios,
-              color: Colors.black,
+              color: theme.iconTheme.color,
               size: 20,
             ),
             onPressed: () {
@@ -324,18 +248,18 @@ Created with Umrah Trip Planner
         ),
         centerTitle: true,
         title: Text(
-          'Personalise My Trips',
+          l10n.personaliseMyTrips,
           style: GoogleFonts.montserrat(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: Colors.black,
+            color: theme.textTheme.titleLarge?.color,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.share,
-              color: Colors.black,
+              color: theme.iconTheme.color,
               size: 22,
             ),
             onPressed: _shareTrip,
@@ -353,37 +277,37 @@ Created with Umrah Trip Planner
               Container(
                 width: 80,
                 height: 80,
-                decoration: const BoxDecoration(
-                  color: Colors.black,
+                decoration: BoxDecoration(
+                  color: isDark ? theme.colorScheme.primary : Colors.black,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.check,
-                  color: Colors.white,
+                  color: isDark ? Colors.black : Colors.white,
                   size: 50,
                 ),
               ),
               const SizedBox(height: 32),
               // Congratulatory message
               Text(
-                'Congrats! You have\npersonalised Umrah trips\nonboards!',
+                l10n.congratsTitle,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black,
+                  color: theme.textTheme.titleLarge?.color,
                   height: 1.4,
                 ),
               ),
               const SizedBox(height: 16),
               // Description text
               Text(
-                'Now you can have a wonderful Umrah\njourney insights.',
+                l10n.congratsSubtitle,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w400,
-                  color: Colors.black87,
+                  color: theme.textTheme.bodyLarge?.color,
                   height: 1.5,
                 ),
               ),
@@ -399,7 +323,7 @@ Created with Umrah Trip Planner
                       child: ElevatedButton(
                         onPressed: _navigateToSavedTrips,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey[200],
+                          backgroundColor: isDark ? Colors.grey[800] : Colors.grey[200],
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -407,11 +331,11 @@ Created with Umrah Trip Planner
                           elevation: 0,
                         ),
                         child: Text(
-                          'Go to saved trips',
+                          l10n.goToSavedTrips,
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
-                            color: Colors.black87,
+                            color: isDark ? Colors.white : Colors.black87,
                           ),
                         ),
                       ),
@@ -431,15 +355,15 @@ Created with Umrah Trip Planner
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFB3E5FC),
+                          backgroundColor: const Color(0xFF64D2FF), // Cyan
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(30),
                           ),
                           elevation: 0,
                         ),
                         child: Text(
-                          'Done',
+                          l10n.done,
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,

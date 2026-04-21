@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../l10n/generated/app_localizations.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
+import 'package:flutter/foundation.dart';
 import '../services/auth_service.dart';
+import '../services/profile_service.dart';
 import 'sign_in_screen.dart';
 import 'profile_details_screen.dart';
 import 'faq_screen.dart';
@@ -15,7 +22,8 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   String userName = 'User';
-  String? profileImagePath; // Can be set to a local image path or network URL
+  String? profileImagePath;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -25,28 +33,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _loadUserName() async {
     final displayName = await AuthService.getDisplayName();
+    final profileData = await ProfileService.getProfileData();
     if (mounted) {
       setState(() {
         userName = displayName ?? 'User';
+        profileImagePath = profileData?['profileImagePath'];
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
         automaticallyImplyLeading: false,
         centerTitle: true,
         title: Text(
-          'Profile',
+          l10n.profile,
           style: GoogleFonts.montserrat(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: Colors.black,
+            color: theme.textTheme.titleLarge?.color,
           ),
         ),
       ),
@@ -69,6 +82,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildProfilePicture() {
+    final theme = Theme.of(context);
     return SizedBox(
       width: 120,
       height: 120,
@@ -82,20 +96,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: Colors.black,
+                color: theme.dividerColor,
                 width: 2,
               ),
-              color: Colors.grey[200],
+              color: theme.canvasColor,
             ),
-            child: profileImagePath != null
+            child: profileImagePath != null && profileImagePath!.isNotEmpty
                 ? ClipOval(
-                    child: Image.network(
-                      profileImagePath!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return _buildDefaultProfileIcon();
-                      },
-                    ),
+                    child: kIsWeb
+                        ? Image.network(
+                            profileImagePath!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return _buildDefaultProfileIcon();
+                            },
+                          )
+                        : Image.file(
+                            File(profileImagePath!),
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return _buildDefaultProfileIcon();
+                            },
+                          ),
                   )
                 : _buildDefaultProfileIcon(),
           ),
@@ -112,7 +134,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   shape: BoxShape.circle,
                   color: const Color(0xFF036B52),
                   border: Border.all(
-                    color: Colors.white,
+                    color: theme.cardColor,
                     width: 3,
                   ),
                   boxShadow: [
@@ -138,29 +160,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildDefaultProfileIcon() {
+    final theme = Theme.of(context);
     return Icon(
       Icons.person,
       size: 60,
-      color: Colors.grey[600],
+      color: theme.iconTheme.color?.withOpacity(0.5),
     );
   }
 
   Widget _buildUserName() {
-    return Text(
-      userName,
-      style: GoogleFonts.poppins(
-        fontSize: 20,
-        fontWeight: FontWeight.w500,
-        color: Colors.black,
-      ),
+    final theme = Theme.of(context);
+    return Column(
+      children: [
+        Text(
+          userName,
+          style: GoogleFonts.poppins(
+            fontSize: 20,
+            fontWeight: FontWeight.w500,
+            color: theme.textTheme.titleLarge?.color,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          decoration: BoxDecoration(
+            color: theme.primaryColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            "v1.1.0 (Cloud Sync)", 
+            style: GoogleFonts.poppins(
+              fontSize: 10,
+              color: theme.primaryColor,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildMenuOptions() {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    
     final menuItems = [
       _MenuItemData(
         icon: Icons.person_outline,
-        title: 'Profile details',
+        title: l10n.profileDetails,
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(
@@ -171,7 +218,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       _MenuItemData(
         icon: Icons.help_outline,
-        title: 'FAQ',
+        title: l10n.faq,
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(
@@ -182,7 +229,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       _MenuItemData(
         icon: Icons.phone_outlined,
-        title: 'Contact Us',
+        title: l10n.contactUs,
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(
@@ -193,7 +240,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       _MenuItemData(
         icon: Icons.logout_outlined,
-        title: 'Log Out',
+        title: l10n.logOut,
         onTap: () {
           _showLogoutDialog(context);
         },
@@ -203,7 +250,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -225,7 +272,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ListTile(
                 leading: Icon(
                   item.icon,
-                  color: Colors.black87,
+                  color: theme.iconTheme.color,
                   size: 24,
                 ),
                 title: Text(
@@ -233,12 +280,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w400,
-                    color: Colors.black87,
+                    color: theme.textTheme.bodyLarge?.color,
                   ),
                 ),
                 trailing: Icon(
                   Icons.chevron_right,
-                  color: Colors.grey[600],
+                  color: theme.iconTheme.color?.withOpacity(0.5),
                 ),
                 onTap: item.onTap,
                 contentPadding: const EdgeInsets.symmetric(
@@ -250,7 +297,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Divider(
                   height: 1,
                   thickness: 1,
-                  color: Colors.grey[200],
+                  color: theme.dividerColor.withOpacity(0.1),
                   indent: 60,
                 ),
             ],
@@ -260,12 +307,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-
-
   void _handleEditProfilePicture() {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    
     // Show options dialog for editing profile picture
     showModalBottomSheet(
       context: context,
+      backgroundColor: theme.canvasColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(20),
@@ -287,10 +336,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 20),
               ListTile(
-                leading: const Icon(Icons.photo_library_outlined),
+                leading: Icon(Icons.photo_library_outlined, color: theme.iconTheme.color),
                 title: Text(
-                  'Choose from Gallery',
-                  style: GoogleFonts.poppins(),
+                  l10n.chooseFromGallery,
+                  style: GoogleFonts.poppins(color: theme.textTheme.bodyLarge?.color),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -298,10 +347,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.camera_alt_outlined),
+                leading: Icon(Icons.camera_alt_outlined, color: theme.iconTheme.color),
                 title: Text(
-                  'Take Photo',
-                  style: GoogleFonts.poppins(),
+                  l10n.takePhoto,
+                  style: GoogleFonts.poppins(color: theme.textTheme.bodyLarge?.color),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -312,7 +361,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ListTile(
                   leading: const Icon(Icons.delete_outline, color: Colors.red),
                   title: Text(
-                    'Remove Photo',
+                    l10n.removePhoto,
                     style: GoogleFonts.poppins(
                       color: Colors.red,
                     ),
@@ -330,84 +379,96 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? image = await _picker.pickImage(source: source);
+      if (image != null) {
+        // Save image locally
+        String savedPath;
+        if (kIsWeb) {
+          savedPath = image.path;
+        } else {
+          final appDir = await getApplicationDocumentsDirectory();
+          final fileName = 'profile_${DateTime.now().millisecondsSinceEpoch}${path.extension(image.path)}';
+          final savedImage = await File(image.path).copy('${appDir.path}/$fileName');
+          savedPath = savedImage.path;
+        }
+        
+        // Save path to profile service
+        await ProfileService.saveProfileData(profileImagePath: savedPath);
+        
+        if (mounted) {
+          setState(() {
+            profileImagePath = savedPath;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(AppLocalizations.of(context)!.profileSaved)),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating profile picture: $e')),
+        );
+      }
+    }
+  }
+
   void _pickImageFromGallery() {
-    // TODO: Implement image picker from gallery
-    // You can use image_picker package: https://pub.dev/packages/image_picker
-    // Example:
-    // final ImagePicker picker = ImagePicker();
-    // final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    // if (image != null) {
-    //   setState(() {
-    //     profileImagePath = image.path;
-    //   });
-    // }
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Gallery picker will be implemented here',
-          style: GoogleFonts.poppins(),
-        ),
-      ),
-    );
+    _pickImage(ImageSource.gallery);
   }
 
   void _takePhoto() {
-    // TODO: Implement camera functionality
-    // You can use image_picker package: https://pub.dev/packages/image_picker
-    // Example:
-    // final ImagePicker picker = ImagePicker();
-    // final XFile? image = await picker.pickImage(source: ImageSource.camera);
-    // if (image != null) {
-    //   setState(() {
-    //     profileImagePath = image.path;
-    //   });
-    // }
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Camera functionality will be implemented here',
-          style: GoogleFonts.poppins(),
-        ),
-      ),
-    );
+    _pickImage(ImageSource.camera);
   }
 
-  void _removeProfilePicture() {
+  void _removeProfilePicture() async {
+    final l10n = AppLocalizations.of(context)!;
+    
     setState(() {
-      profileImagePath = null;
+      profileImagePath = '';
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Profile picture removed',
-          style: GoogleFonts.poppins(),
+    
+    await ProfileService.saveProfileData(profileImagePath: '');
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            l10n.profilePictureRemoved,
+            style: GoogleFonts.poppins(),
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   void _showLogoutDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: theme.canvasColor,
           title: Text(
-            'Log Out',
+            l10n.logOut,
             style: GoogleFonts.poppins(
               fontWeight: FontWeight.w600,
+              color: theme.textTheme.titleLarge?.color,
             ),
           ),
           content: Text(
-            'Are you sure you want to log out?',
-            style: GoogleFonts.poppins(),
+            l10n.areYouSureLogOut,
+            style: GoogleFonts.poppins(color: theme.textTheme.bodyLarge?.color),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
-                'Cancel',
+                l10n.cancel,
                 style: GoogleFonts.poppins(
                   color: Colors.grey[700],
                 ),
@@ -427,7 +488,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        'Logged out successfully',
+                        l10n.loggedOutSuccessfully,
                         style: GoogleFonts.poppins(),
                       ),
                     ),
@@ -435,7 +496,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 }
               },
               child: Text(
-                'Log Out',
+                l10n.logOut,
                 style: GoogleFonts.poppins(
                   color: Colors.red,
                   fontWeight: FontWeight.w600,

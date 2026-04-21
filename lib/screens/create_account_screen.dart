@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import 'main_navigation.dart';
+import '../l10n/generated/app_localizations.dart';
 
 class CreateAccountScreen extends StatefulWidget {
   const CreateAccountScreen({super.key});
@@ -34,11 +35,13 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       return;
     }
 
+    final l10n = AppLocalizations.of(context)!;
+
     setState(() {
       _isLoading = true;
     });
 
-    final success = await AuthService.registerUser(
+    final error = await AuthService.registerUser(
       displayName: _displayNameController.text.trim(),
       email: _emailController.text.trim(),
       password: _passwordController.text,
@@ -48,14 +51,14 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       _isLoading = false;
     });
 
-    if (success) {
+    if (error == null) {
       // Auto sign in after registration
-      final signInSuccess = await AuthService.signIn(
+      final signInError = await AuthService.signIn(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
 
-      if (signInSuccess && mounted) {
+      if (signInError == null && mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (context) => const MainNavigation(),
@@ -67,7 +70,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'Account created successfully, but automatic sign-in failed. Please sign in manually.',
+                l10n.accountCreatedSignInFailed,
                 style: GoogleFonts.montserrat(),
               ),
               backgroundColor: Colors.orange,
@@ -78,10 +81,26 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       }
     } else {
       if (mounted) {
+        String errorMessage;
+        switch (error) {
+          case 'weak-password':
+            errorMessage = l10n.weakPassword;
+            break;
+          case 'email-already-in-use':
+            errorMessage = l10n.emailAlreadyExists;
+            break;
+          case 'invalid-email':
+            errorMessage = l10n.validEmail; // Reusing validation string
+            break;
+          default:
+            // Display localized fallback or append raw error for debugging
+            errorMessage = "${l10n.registrationFailed} ($error)";
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Email already exists. Please use a different email.',
+              errorMessage,
               style: GoogleFonts.montserrat(),
             ),
             backgroundColor: Colors.red,
@@ -93,6 +112,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -149,7 +169,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                       const SizedBox(height: 24),
                       // Title
                       Text(
-                        'Create an account',
+                        l10n.createAccount,
                         style: GoogleFonts.montserrat(
                           fontSize: 24,
                           fontWeight: FontWeight.w700,
@@ -160,7 +180,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                       const SizedBox(height: 12),
                       // Description
                       Text(
-                        'Create account easily with a simple steps and in real-time.',
+                        l10n.createAccountSubtitle,
                         style: GoogleFonts.montserrat(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
@@ -174,13 +194,13 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                       _buildInputField(
                         controller: _displayNameController,
                         icon: Icons.person_outline,
-                        hintText: 'Display Name',
+                        hintText: l10n.displayName,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your display name';
+                            return l10n.displayNameValidation;
                           }
                           if (value.length < 2) {
-                            return 'Display name must be at least 2 characters';
+                            return l10n.displayNameLengthValidation;
                           }
                           return null;
                         },
@@ -190,14 +210,14 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                       _buildInputField(
                         controller: _emailController,
                         icon: Icons.email_outlined,
-                        hintText: 'Email',
+                        hintText: l10n.emailAddress,
                         keyboardType: TextInputType.emailAddress,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your email';
+                            return l10n.enterEmail;
                           }
                           if (!value.contains('@')) {
-                            return 'Please enter a valid email';
+                            return l10n.validEmail;
                           }
                           return null;
                         },
@@ -207,7 +227,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                       _buildInputField(
                         controller: _passwordController,
                         icon: Icons.lock_outline,
-                        hintText: 'Password',
+                        hintText: l10n.passwords,
                         obscureText: _obscurePassword,
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -224,10 +244,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your password';
+                            return l10n.passwordLengthValidation; // Reusing validation message or create generic 'required'
+                            return l10n.passwordLengthValidation;
                           }
                           if (value.length < 6) {
-                            return 'Password must be at least 6 characters';
+                            return l10n.passwordLengthValidation;
                           }
                           return null;
                         },
@@ -237,7 +258,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                       _buildInputField(
                         controller: _confirmPasswordController,
                         icon: Icons.lock_outline,
-                        hintText: 'Confirm Password',
+                        hintText: l10n.confirmPassword,
                         obscureText: _obscureConfirmPassword,
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -254,10 +275,10 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please confirm your password';
+                            return l10n.confirmPasswordValidation;
                           }
                           if (value != _passwordController.text) {
-                            return 'Passwords do not match';
+                            return l10n.passwordsDoNotMatch;
                           }
                           return null;
                         },
@@ -288,7 +309,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                                   ),
                                 )
                               : Text(
-                                  'Create account',
+                                  l10n.createAccount,
                                   style: GoogleFonts.montserrat(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w400,
@@ -300,7 +321,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                       const SizedBox(height: 16),
                       // Have account text
                       Text(
-                        'Have an account?',
+                        l10n.haveAccount,
                         style: GoogleFonts.montserrat(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
@@ -324,7 +345,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                             elevation: 0,
                           ),
                           child: Text(
-                            'Sign in',
+                            l10n.signIn,
                             style: GoogleFonts.montserrat(
                               fontSize: 16,
                               fontWeight: FontWeight.w400,

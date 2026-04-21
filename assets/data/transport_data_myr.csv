@@ -1,0 +1,22 @@
+Route,Transport_Type,Budget_Type,Estimated_Cost_MYR
+JED Airport-Makkah,Bus,Low,62.5
+JED Airport-Makkah,Taxi,Medium,312.5
+JED Airport-Makkah,Private Car,High,500.0
+MED Airport-Madinah,Bus,Low,50.0
+MED Airport-Madinah,Taxi,Medium,250.0
+MED Airport-Madinah,Private Car,High,437.5
+Makkah Internal,Bus,Low,6.25
+Makkah Internal,Taxi,Medium,31.25
+Makkah Internal,Private Car,High,62.5
+Madinah Internal,Bus,Low,6.25
+Madinah Internal,Taxi,Medium,25.0
+Madinah Internal,Private Car,High,50.0
+Makkah-Madinah,Public Bus,Low,75.0
+Makkah-Madinah,High-Speed Rail (Haramain),Medium,187.5
+Makkah-Madinah,Private Car,High,625.0
+Makkah-JED Airport,Bus,Low,62.5
+Makkah-JED Airport,Taxi,Medium,312.5
+Makkah-JED Airport,Private Car,High,500.0
+Madinah-MED Airport,Bus,Low,50.0
+Madinah-MED Airport,Taxi,Medium,250.0
+Madinah-MED Airport,Private Car,High,437.5

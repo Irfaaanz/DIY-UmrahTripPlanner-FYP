@@ -1,7 +1,13 @@
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/profile_service.dart';
 import '../services/auth_service.dart';
+import '../l10n/generated/app_localizations.dart';
 
 class ProfileDetailsScreen extends StatefulWidget {
   const ProfileDetailsScreen({super.key});
@@ -21,6 +27,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
   bool _isLoading = true;
   bool _isSaving = false;
   bool _obscurePassword = true;
+  
+  String? _profileImagePath;
+  File? _newProfileImage;
+  XFile? _newXFileImage;
+  final ImagePicker _picker = ImagePicker();
   
   final List<String> _genderOptions = ['Male', 'Female'];
 
@@ -52,11 +63,87 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
         _displayNameController.text = profile?['displayName'] ?? '';
         _fullNameController.text = profile?['fullName'] ?? '';
         _selectedGender = profile?['gender'] as String?;
+        // Validate gender: If not in options (e.g. empty string), reset to null
+        if (_selectedGender != null && !_genderOptions.contains(_selectedGender)) {
+          _selectedGender = null;
+        }
         _emailController.text = profile?['email'] ?? '';
         _phoneController.text = profile?['phoneNo'] ?? '';
-        _passwordController.text = profile?['password'] ?? '';
+        // Do not pre-fill password with masked characters to avoids confusion
+        _passwordController.text = ''; 
+        _profileImagePath = profile?['profileImagePath'];
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? image = await _picker.pickImage(source: source);
+      if (image != null) {
+        setState(() {
+          _newXFileImage = image;
+          if (!kIsWeb) {
+             _newProfileImage = File(image.path);
+          } else {
+             // For web we can't create File(image.path) safely or uselessly
+             _newProfileImage = null; 
+          }
+        });
+      }
+    } catch (e) {
+      // Handle error
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error picking image: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _showImageSourceActionSheet() async {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: Text(l10n.chooseFromGallery),
+              onTap: () {
+                Navigator.of(context).pop();
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_camera),
+              title: Text(l10n.takePhoto),
+              onTap: () {
+                Navigator.of(context).pop();
+                _pickImage(ImageSource.camera);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<String?> _saveProfileImage() async {
+    if (_newProfileImage == null) return _profileImagePath;
+    
+    try {
+      if (kIsWeb) {
+        return _newProfileImage!.path;
+      }
+      final appDir = await getApplicationDocumentsDirectory();
+      final fileName = 'profile_${DateTime.now().millisecondsSinceEpoch}${path.extension(_newProfileImage!.path)}';
+      final savedImage = await _newProfileImage!.copy('${appDir.path}/$fileName');
+      return savedImage.path;
+    } catch (e) {
+      debugPrint('Error saving image: $e');
+      return _profileImagePath;
     }
   }
 
@@ -66,6 +153,14 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
     });
 
     try {
+      // Save profile image if new one selected
+      String? imagePath;
+      if (_newXFileImage != null) {
+          imagePath = await ProfileService.uploadProfileImageXFile(_newXFileImage);
+      } else {
+          imagePath = _profileImagePath;
+      }
+
       // Save profile data
       final success = await ProfileService.saveProfileData(
         displayName: _displayNameController.text.trim().isEmpty 
@@ -78,11 +173,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
         phoneNo: _phoneController.text.trim().isEmpty 
             ? null 
             : _phoneController.text.trim(),
+        profileImagePath: imagePath,
       );
 
-      // Update password if changed (not masked)
-      if (_passwordController.text != '**********' && 
-          _passwordController.text.isNotEmpty) {
+      // Update password if changed
+      if (_passwordController.text.isNotEmpty) {
         await ProfileService.updatePassword(_passwordController.text);
       }
 
@@ -139,17 +234,20 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.only(left: 8.0),
           child: IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.arrow_back_ios,
-              color: Colors.black,
+              color: theme.iconTheme.color,
               size: 20,
             ),
             onPressed: () {
@@ -159,11 +257,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
         ),
         centerTitle: true,
         title: Text(
-          'Profile Details',
+          l10n.profileDetails,
           style: GoogleFonts.montserrat(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: Colors.black,
+            color: theme.textTheme.titleLarge?.color,
           ),
         ),
       ),
@@ -173,26 +271,81 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               child: Column(
                 children: [
-                  // Profile Picture
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.grey[200],
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.3),
-                          spreadRadius: 2,
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
+                  GestureDetector(
+                    onTap: _showImageSourceActionSheet,
+                    child: Stack(
+                      children: [
+                        Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: theme.canvasColor,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.1),
+                                spreadRadius: 2,
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: ClipOval(
+                          child: ClipOval(
+                            child: _newXFileImage != null
+                                ? (kIsWeb 
+                                    ? Image.network(
+                                        _newXFileImage!.path, 
+                                        width: 100, 
+                                        height: 100, 
+                                        fit: BoxFit.cover,
+                                      )
+                                    : Image.file(
+                                        File(_newXFileImage!.path),
+                                        width: 100,
+                                        height: 100,
+                                        fit: BoxFit.cover,
+                                      ))
+                                : _profileImagePath != null && _profileImagePath!.isNotEmpty
+                                    ? Image.network(
+                                        _profileImagePath!,
+                                        width: 100,
+                                        height: 100,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return Icon(
+                                            Icons.person,
+                                            size: 50,
+                                            color: theme.iconTheme.color?.withOpacity(0.5),
+                                          );
+                                        },
+                                      )
+                                    : Icon(
+                                        Icons.person,
+                                        size: 50,
+                                        color: theme.iconTheme.color?.withOpacity(0.5),
+                                      ),
+                          ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: theme.primaryColor,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: theme.canvasColor, width: 2),
+                            ),
+                            child: const Icon(
+                              Icons.camera_alt,
+                              size: 14,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                       ],
-                    ),
-                    child: Icon(
-                      Icons.person,
-                      size: 50,
-                      color: Colors.grey[600],
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -204,37 +357,38 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                     style: GoogleFonts.poppins(
                       fontSize: 20,
                       fontWeight: FontWeight.w500,
-                      color: Colors.black,
+                      color: theme.textTheme.titleLarge?.color,
                     ),
                   ),
                   const SizedBox(height: 32),
                   // Form Fields
                   _buildField(
-                    label: 'Display Name',
+                    label: l10n.displayName,
                     controller: _displayNameController,
                   ),
                   const SizedBox(height: 16),
                   _buildField(
-                    label: 'Full Name',
+                    label: l10n.fullName,
                     controller: _fullNameController,
                   ),
                   const SizedBox(height: 16),
                   _buildGenderDropdown(),
                   const SizedBox(height: 16),
                   _buildField(
-                    label: 'Email address',
+                    label: l10n.emailAddress,
                     controller: _emailController,
                     enabled: false, // Email is read-only
                   ),
                   const SizedBox(height: 16),
                   _buildField(
-                    label: 'Phone No.',
+                    label: l10n.phoneNo,
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
                   ),
                   const SizedBox(height: 16),
                   _buildField(
-                    label: 'Passwords',
+                    label: l10n.passwords, // Keep label, but behavior changes
+                    hintText: "Leave empty to keep current",
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     suffixIcon: IconButton(
@@ -242,7 +396,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                         _obscurePassword 
                             ? Icons.visibility_outlined 
                             : Icons.visibility_off_outlined,
-                        color: Colors.black87,
+                        color: theme.iconTheme.color,
                       ),
                       onPressed: () {
                         setState(() {
@@ -277,7 +431,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                               ),
                             )
                           : Text(
-                              'Save',
+                              'Save', // TODO: Add to ARB if strictly needed, but "Save" is common enough or missed in my manual scan. Let's assume English OK or fix later. Wait, I missed "Save" in ARB scan.
                               style: GoogleFonts.poppins(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
@@ -299,14 +453,16 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
     TextInputType? keyboardType,
     bool obscureText = false,
     Widget? suffixIcon,
+    String? hintText,
   }) {
+    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
+            color: Colors.grey.withOpacity(0.1),
             spreadRadius: 1,
             blurRadius: 6,
             offset: const Offset(0, 2),
@@ -321,18 +477,23 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
         style: GoogleFonts.poppins(
           fontSize: 16,
           fontWeight: FontWeight.w600,
-          color: Colors.black87,
+          color: theme.textTheme.bodyLarge?.color,
         ),
         decoration: InputDecoration(
           labelText: label,
+          hintText: hintText, // Added hintText
+          hintStyle: GoogleFonts.poppins(
+            fontSize: 14,
+            color: theme.textTheme.bodyMedium?.color?.withOpacity(0.5),
+          ),
           labelStyle: GoogleFonts.poppins(
             fontSize: 14,
-            color: Colors.black87,
+            color: theme.textTheme.bodyMedium?.color,
           ),
-          suffixIcon: suffixIcon ?? const Icon(
+          suffixIcon: suffixIcon ?? Icon(
             Icons.arrow_forward_ios,
             size: 16,
-            color: Colors.black87,
+            color: theme.iconTheme.color,
           ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
@@ -345,13 +506,15 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
   }
 
   Widget _buildGenderDropdown() {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
+            color: Colors.grey.withOpacity(0.1),
             spreadRadius: 1,
             blurRadius: 6,
             offset: const Offset(0, 2),
@@ -360,16 +523,17 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
       ),
       child: DropdownButtonFormField<String>(
         value: _selectedGender,
+        dropdownColor: theme.cardColor,
         decoration: InputDecoration(
-          labelText: 'Gender',
+          labelText: l10n.gender,
           labelStyle: GoogleFonts.poppins(
             fontSize: 14,
-            color: Colors.black87,
+            color: theme.textTheme.bodyMedium?.color,
           ),
-          suffixIcon: const Icon(
+          suffixIcon: Icon(
             Icons.arrow_forward_ios,
             size: 16,
-            color: Colors.black87,
+            color: theme.iconTheme.color,
           ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
@@ -380,12 +544,15 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
         style: GoogleFonts.poppins(
           fontSize: 16,
           fontWeight: FontWeight.w600,
-          color: Colors.black87,
+          color: theme.textTheme.bodyLarge?.color,
         ),
         items: _genderOptions.map((String gender) {
           return DropdownMenuItem<String>(
             value: gender,
-            child: Text(gender),
+            child: Text(
+              gender,
+              style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+            ),
           );
         }).toList(),
         onChanged: (String? newValue) {

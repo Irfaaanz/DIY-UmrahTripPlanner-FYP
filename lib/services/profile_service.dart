@@ -1,30 +1,95 @@
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
+import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'auth_service.dart';
 
 class ProfileService {
-  static const String _profileDataKey = 'user_profile_data';
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  static final FirebaseStorage _storage = FirebaseStorage.instance;
+  static const String _collectionName = 'users';
 
-  // Get current user's email
-  static Future<String?> _getCurrentUserEmail() async {
+  // Get current user's UID
+  static Future<String?> _getCurrentUserId() async {
     final user = await AuthService.getCurrentUser();
-    return user?['email'] as String?;
+    return user?['uid'] as String?;
   }
 
   // Get profile data for current user
   static Future<Map<String, dynamic>?> getProfileData() async {
     try {
-      final email = await _getCurrentUserEmail();
-      if (email == null) return null;
+      final uid = await _getCurrentUserId();
+      if (uid == null) return null;
 
-      final prefs = await SharedPreferences.getInstance();
-      final profileDataJson = prefs.getString(_profileDataKey);
-      
-      if (profileDataJson == null) return null;
-
-      final allProfiles = jsonDecode(profileDataJson) as Map<String, dynamic>;
-      return allProfiles[email] as Map<String, dynamic>?;
+      final docSnapshot = await _firestore.collection(_collectionName).doc(uid).get();
+      if (docSnapshot.exists) {
+        return docSnapshot.data();
+      }
+      return null;
     } catch (e) {
+      debugPrint('Error getting profile data: $e');
+      return null;
+    }
+  }
+
+  // Upload profile image to Firebase Storage and return URL
+  static Future<String?> uploadProfileImage(dynamic imageFile) async {
+    try {
+      final uid = await _getCurrentUserId();
+      if (uid == null) return null;
+
+      final String fileName = 'profile_$uid.jpg';
+      final Reference ref = _storage.ref().child('profile_images').child(fileName);
+      
+      TaskSnapshot snapshot;
+      if (kIsWeb) {
+         // On web, imageFile is expected to be a XFile path (which is a blob url) or bytes? 
+         // Actually, cross-platform ImagePicker returns XFile. 
+         // For web upload, we ideally need bytes or the blob.
+         // However, standard File(path) doesn't work on web.
+         // We should change the argument to accept XFile directly for better cross-platform support.
+         // Or strictly bytes.
+         // Let's assume the caller passes XFile for now, or we handle it in UI. 
+         // Wait, the previous UI code passed a path string.
+         // Let's make this method accept XFile to be robust.
+         return null; // Should be handled via dedicated method accepting XFile or Uint8List
+      } else {
+        // Mobile
+        final file = File(imageFile as String);
+        snapshot = await ref.putFile(file);
+      }
+      
+      return await snapshot.ref.getDownloadURL();
+    } catch (e) {
+      debugPrint('Error uploading image: $e');
+      return null;
+    }
+  }
+  
+  // New method needed: Upload XFile (works for web and mobile)
+  static Future<String?> uploadProfileImageXFile(dynamic xFile) async {
+     try {
+      final uid = await _getCurrentUserId();
+      if (uid == null) return null;
+
+      // Import cross_file or image_picker dependency if needed, but 'dynamic' for now 
+      // strictly to avoid import errors if not checking type, but better to use bytes.
+      // Let's use readAsBytes which is cross platform on XFile.
+      
+      // We need to know if it's XFile.
+      // Assuming caller passes XFile.
+      
+      final String fileName = 'profile_$uid.jpg';
+      final Reference ref = _storage.ref().child('profile_images').child(fileName);
+      
+      // XFile has readAsBytes()
+      final bytes = await xFile.readAsBytes();
+      final metadata = SettableMetadata(contentType: 'image/jpeg');
+      
+      final snapshot = await ref.putData(bytes, metadata);
+      return await snapshot.ref.getDownloadURL();
+    } catch (e) {
+      debugPrint('Error uploading image XFile: $e');
       return null;
     }
   }
@@ -35,97 +100,47 @@ class ProfileService {
     String? fullName,
     String? gender,
     String? phoneNo,
+    String? profileImagePath, // This should now be a URL if updated via upload
   }) async {
     try {
-      final email = await _getCurrentUserEmail();
-      if (email == null) return false;
+      final uid = await _getCurrentUserId();
+      if (uid == null) return false;
 
-      final prefs = await SharedPreferences.getInstance();
-      final profileDataJson = prefs.getString(_profileDataKey);
+      final docRef = _firestore.collection(_collectionName).doc(uid);
       
-      Map<String, dynamic> allProfiles = {};
-      if (profileDataJson != null) {
-        allProfiles = jsonDecode(profileDataJson) as Map<String, dynamic>;
-      }
-
-      // Get existing profile or create new one
-      Map<String, dynamic> userProfile = allProfiles[email] as Map<String, dynamic>? ?? {};
+      final Map<String, dynamic> dataToUpdate = {
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
       
-      // Update only provided fields
-      if (fullName != null) userProfile['fullName'] = fullName;
-      if (gender != null) userProfile['gender'] = gender;
-      if (phoneNo != null) userProfile['phoneNo'] = phoneNo;
+      if (fullName != null) dataToUpdate['fullName'] = fullName;
+      if (gender != null) dataToUpdate['gender'] = gender;
+      if (phoneNo != null) dataToUpdate['phoneNo'] = phoneNo;
+      if (profileImagePath != null) dataToUpdate['profileImagePath'] = profileImagePath;
       
-      userProfile['updatedAt'] = DateTime.now().toIso8601String();
+      // Use set with merge: true to create if not exists or update fields
+      await docRef.set(dataToUpdate, SetOptions(merge: true));
       
-      allProfiles[email] = userProfile;
-      await prefs.setString(_profileDataKey, jsonEncode(allProfiles));
-      
-      // Update display name in auth service if provided
+      // Update display name in Firebase Auth
       if (displayName != null) {
-        final usersJson = prefs.getStringList('registered_users') ?? [];
-        for (int i = 0; i < usersJson.length; i++) {
-          final user = jsonDecode(usersJson[i]) as Map<String, dynamic>;
-          if (user['email'] == email) {
-            user['displayName'] = displayName;
-            usersJson[i] = jsonEncode(user);
-            await prefs.setStringList('registered_users', usersJson);
-            
-            // Update current user session
-            final currentUserJson = prefs.getString('current_user');
-            if (currentUserJson != null) {
-              final currentUser = jsonDecode(currentUserJson) as Map<String, dynamic>;
-              if (currentUser['email'] == email) {
-                currentUser['displayName'] = displayName;
-                await prefs.setString('current_user', jsonEncode(currentUser));
-              }
-            }
-            break;
-          }
-        }
+        // We can't update auth directly here comfortably without Auth instance, 
+        // effectively we expect AuthService to handle auth updates, 
+        // but for compatibility with existing code:
+        await AuthService.updateDisplayName(displayName);
+        
+        // Also save to firestore
+        await docRef.update({'displayName': displayName});
       }
       
       return true;
     } catch (e) {
+      debugPrint('Error saving profile data: $e');
       return false;
     }
   }
 
-  // Update password
+  // Update password (wrapper for AuthService)
   static Future<bool> updatePassword(String newPassword) async {
-    try {
-      final email = await _getCurrentUserEmail();
-      if (email == null) return false;
-
-      final prefs = await SharedPreferences.getInstance();
-      final usersJson = prefs.getStringList('registered_users') ?? [];
-      
-      // Find and update user password
-      for (int i = 0; i < usersJson.length; i++) {
-        final user = jsonDecode(usersJson[i]) as Map<String, dynamic>;
-        if (user['email'] == email) {
-          user['password'] = newPassword; // In production, hash this password
-          usersJson[i] = jsonEncode(user);
-          await prefs.setStringList('registered_users', usersJson);
-          
-          // Update current user session
-          final currentUserJson = prefs.getString('current_user');
-          if (currentUserJson != null) {
-            final currentUser = jsonDecode(currentUserJson) as Map<String, dynamic>;
-            if (currentUser['email'] == email) {
-              currentUser['password'] = newPassword;
-              await prefs.setString('current_user', jsonEncode(currentUser));
-            }
-          }
-          
-          return true;
-        }
-      }
-      
-      return false;
-    } catch (e) {
-      return false;
-    }
+    return await AuthService.updatePassword(newPassword);
   }
 
   // Get full profile (including auth data)
@@ -142,6 +157,7 @@ class ProfileService {
         'fullName': profileData?['fullName'] as String? ?? '',
         'gender': profileData?['gender'] as String? ?? '',
         'phoneNo': profileData?['phoneNo'] as String? ?? '',
+        'profileImagePath': profileData?['profileImagePath'] as String?,
         'password': '**********', // Masked password
       };
     } catch (e) {

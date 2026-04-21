@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../l10n/generated/app_localizations.dart';
 
 class ContactUsScreen extends StatefulWidget {
   const ContactUsScreen({super.key});
@@ -42,21 +43,35 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
     }
   }
 
+  String? _encodeQueryParameters(Map<String, String> params) {
+    return params.entries
+        .map((MapEntry<String, String> e) =>
+            '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+        .join('&');
+  }
+
   Future<bool> _sendEmail() async {
     try {
-      final email = 'fanzr24@gmail.com';
-      final subject = Uri.encodeComponent('Inquiry from DIY Umrah Trip Planner App');
-      final body = Uri.encodeComponent(
-        'User Email: ${_emailController.text}\n\n'
-        'Enquiry:\n${_enquiryController.text}',
+      final Uri emailLaunchUri = Uri(
+        scheme: 'mailto',
+        path: 'fanzr24@gmail.com',
+        query: _encodeQueryParameters(<String, String>{
+          'subject': 'Inquiry from DIY Umrah Trip Planner App',
+          'body': 'User Email: ${_emailController.text}\n\nEnquiry:\n${_enquiryController.text}',
+        }),
       );
-      final uri = Uri.parse('mailto:$email?subject=$subject&body=$body');
       
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri);
+      if (await canLaunchUrl(emailLaunchUri)) {
+        await launchUrl(emailLaunchUri);
         return true;
       } else {
-        return false;
+        // Fallback: try launching without checking canLaunchUrl (sometimes works on some devices even if check fails)
+        try {
+          await launchUrl(emailLaunchUri);
+          return true;
+        } catch (e) {
+          return false;
+        }
       }
     } catch (e) {
       return false;
@@ -111,17 +126,20 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.only(left: 8.0),
           child: IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.arrow_back_ios,
-              color: Colors.black,
+              color: theme.iconTheme.color,
               size: 20,
             ),
             onPressed: () {
@@ -131,20 +149,24 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
         ),
         centerTitle: true,
         title: Text(
-          'Contact Us',
+          l10n.contactUs, // Assuming 'Contact Us' key exists or use l10n.contactUs if added. I added contactUsDesc but check if title "Contact Us" was added? I see I added "developerName" etc. I might have missed "Contact Us" title itself if it wasn't in my list. Let's check `app_en.arb` update. 
+          // Wait, I see "Contact Us" title in the original file. In my ARB update I added "contactUsDesc".
+          // I didn't see "Contact Us" (title) in the ARB list I generated. 
+          // However, "Settings" screen had "Contact Us" already. Let's assume `l10n.contactUs` exists from previous work or if not I will default to hardcoded "Contact Us" for safety if it fails compilation, but actually I should restart compilation to check.
+          // Actually, looking at `SettingsScreen` from previous turn, it used `l10n.contactUs`. So it exists.
           style: GoogleFonts.montserrat(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: Colors.black,
+            color: theme.textTheme.titleLarge?.color,
           ),
         ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
             child: IconButton(
-              icon: const Icon(
+              icon: Icon(
                 Icons.phone,
-                color: Colors.black,
+                color: theme.iconTheme.color,
                 size: 24,
               ),
               onPressed: _makePhoneCall,
@@ -164,11 +186,11 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "'Irfan (Apps Developer)",
+                    l10n.developerName,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+                      color: theme.textTheme.titleLarge?.color,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -179,14 +201,14 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
-                          color: Colors.black87,
+                          color: theme.textTheme.bodyLarge?.color,
                         ),
                       ),
                       const SizedBox(width: 8),
                       Container(
                         width: 1,
                         height: 16,
-                        color: Colors.black87,
+                        color: theme.dividerColor,
                       ),
                       const SizedBox(width: 8),
                       Text(
@@ -194,7 +216,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
-                          color: Colors.black87,
+                          color: theme.textTheme.bodyLarge?.color,
                         ),
                       ),
                     ],
@@ -203,15 +225,15 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
               ),
               const SizedBox(height: 24),
               // Divider
-              Divider(color: Colors.grey[300], thickness: 1),
+              Divider(color: theme.dividerColor, thickness: 1),
               const SizedBox(height: 24),
               // Inquiry Form
               Text(
-                'You can leave any enquiry below if there any problems or bug experienced while using our apps!',
+                l10n.contactUsDesc,
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: Colors.black87,
+                  color: theme.textTheme.bodyLarge?.color,
                   height: 1.5,
                 ),
               ),
@@ -219,11 +241,11 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
               // Email Input
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: theme.cardColor,
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.2),
+                      color: Colors.grey.withOpacity(0.1),
                       spreadRadius: 1,
                       blurRadius: 6,
                       offset: const Offset(0, 2),
@@ -236,13 +258,13 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w400,
-                    color: Colors.black87,
+                    color: theme.textTheme.bodyLarge?.color,
                   ),
                   decoration: InputDecoration(
-                    hintText: 'Your email address',
+                    hintText: l10n.yourEmail,
                     hintStyle: GoogleFonts.poppins(
                       fontSize: 16,
-                      color: Colors.black54,
+                      color: theme.hintColor,
                     ),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
@@ -252,10 +274,10 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your email address';
+                      return l10n.enterEmail;
                     }
                     if (!value.contains('@')) {
-                      return 'Please enter a valid email address';
+                      return l10n.validEmail;
                     }
                     return null;
                   },
@@ -265,11 +287,11 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
               // Enquiry Input
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: theme.cardColor,
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.2),
+                      color: Colors.grey.withOpacity(0.1),
                       spreadRadius: 1,
                       blurRadius: 6,
                       offset: const Offset(0, 2),
@@ -282,13 +304,13 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w400,
-                    color: Colors.black87,
+                    color: theme.textTheme.bodyLarge?.color,
                   ),
                   decoration: InputDecoration(
-                    hintText: 'Enquiries',
+                    hintText: l10n.enquiries,
                     hintStyle: GoogleFonts.poppins(
                       fontSize: 16,
-                      color: Colors.black54,
+                      color: theme.hintColor,
                     ),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
@@ -298,7 +320,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your enquiry';
+                      return l10n.enterEnquiry;
                     }
                     return null;
                   },
@@ -330,7 +352,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                           ),
                         )
                       : Text(
-                          'Submit',
+                          l10n.submit,
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,

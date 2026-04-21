@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'daily_expenses_screen.dart';
+import 'transport_preferences_screen.dart';
+import '../l10n/generated/app_localizations.dart';
 
 class FlightPreferencesScreen extends StatefulWidget {
   final String tripName;
   final int age;
   final double budget;
   final int duration;
+  final int daysMakkah;
+  final int daysMadinah;
   final String hotelPreference;
   final String hotelDistance;
   final String roomType;
@@ -17,6 +20,8 @@ class FlightPreferencesScreen extends StatefulWidget {
     required this.age,
     required this.budget,
     required this.duration,
+    required this.daysMakkah,
+    required this.daysMadinah,
     required this.hotelPreference,
     required this.hotelDistance,
     required this.roomType,
@@ -28,24 +33,39 @@ class FlightPreferencesScreen extends StatefulWidget {
 
 class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
   String? _flightPreference;
+  String? _serviceTypePreference;
 
   final List<String> _flightPreferences = ['Direct', 'Transit'];
+  final List<String> _serviceTypePreferences = ['Full Service', 'Low Cost'];
 
   @override
   Widget build(BuildContext context) {
-    final bool canProceed = _flightPreference != null;
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    
+    final Map<String, String> flightPrefDisplay = {
+      'Direct': l10n.direct,
+      'Transit': l10n.transit,
+    };
+
+    final Map<String, String> serviceTypeDisplay = {
+      'Full Service': l10n.fullService,
+      'Low Cost': l10n.lowCost,
+    };
+
+    final bool canProceed = _flightPreference != null && _serviceTypePreference != null;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.only(left: 8.0),
           child: IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.arrow_back_ios,
-              color: Colors.black,
+              color: theme.iconTheme.color,
               size: 20,
             ),
             onPressed: () {
@@ -55,11 +75,11 @@ class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
         ),
         centerTitle: true,
         title: Text(
-          'Personalise My Trips',
+          l10n.personaliseMyTrips,
           style: GoogleFonts.montserrat(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: Colors.black,
+            color: theme.textTheme.titleLarge?.color,
           ),
         ),
       ),
@@ -71,15 +91,15 @@ class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
             children: [
               const SizedBox(height: 16),
               // Progress bar
-              _buildProgressBar(5, 8),
+              _buildProgressBar(6, 8),
               const SizedBox(height: 32),
               // Main heading
               Text(
-                "Let's start your Umrah journey with us",
+                l10n.letsStartJourney,
                 style: GoogleFonts.montserrat(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black,
+                  color: theme.textTheme.titleLarge?.color,
                 ),
               ),
               const SizedBox(height: 16),
@@ -92,19 +112,11 @@ class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Choose your",
+                          l10n.chooseFlightPref,
                           style: GoogleFonts.montserrat(
                             fontSize: 24,
                             fontWeight: FontWeight.w700,
-                            color: Colors.black,
-                          ),
-                        ),
-                        Text(
-                          "flight preferences",
-                          style: GoogleFonts.montserrat(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black,
+                            color: theme.textTheme.titleLarge?.color,
                           ),
                         ),
                       ],
@@ -121,13 +133,28 @@ class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
               const SizedBox(height: 32),
               // Flight preference dropdown
               _buildDropdownField(
-                label: 'Flight preference',
-                hintText: 'Pick your flight preferences',
+                label: l10n.flightPref,
+                hintText: l10n.pickFlightPref,
                 value: _flightPreference,
                 items: _flightPreferences,
+                displayMap: flightPrefDisplay,
                 onChanged: (value) {
                   setState(() {
                     _flightPreference = value;
+                  });
+                },
+              ),
+              const SizedBox(height: 24),
+              // Airline Service Type dropdown
+              _buildDropdownField(
+                label: l10n.airlineServiceType,
+                hintText: l10n.pickServiceType,
+                value: _serviceTypePreference,
+                items: _serviceTypePreferences,
+                displayMap: serviceTypeDisplay,
+                onChanged: (value) {
+                  setState(() {
+                    _serviceTypePreference = value;
                   });
                 },
               ),
@@ -142,15 +169,18 @@ class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
                         ? () {
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (context) => DailyExpensesScreen(
+                                builder: (context) => TransportPreferencesScreen(
                                   tripName: widget.tripName,
                                   age: widget.age,
                                   budget: widget.budget,
                                   duration: widget.duration,
+                                  daysMakkah: widget.daysMakkah,
+                                  daysMadinah: widget.daysMadinah,
                                   hotelPreference: widget.hotelPreference,
                                   hotelDistance: widget.hotelDistance,
                                   roomType: widget.roomType,
                                   flightPreference: _flightPreference!,
+                                  serviceTypePreference: _serviceTypePreference!,
                                 ),
                               ),
                             );
@@ -158,20 +188,20 @@ class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
                         : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: canProceed
-                          ? const Color(0xFFB3E5FC)
-                          : Colors.grey[300],
+                          ? const Color(0xFF64D2FF)
+                          : theme.disabledColor,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(30),
                       ),
                       elevation: 0,
                     ),
                     child: Text(
-                      'Proceed',
+                      l10n.proceed,
                       style: GoogleFonts.montserrat(
                         fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                        color: canProceed ? Colors.black87 : Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                        color: canProceed ? Colors.black87 : theme.disabledColor.withOpacity(0.5),
                       ),
                     ),
                   ),
@@ -189,8 +219,10 @@ class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
     required String hintText,
     required String? value,
     required List<String> items,
+    required Map<String, String> displayMap,
     required ValueChanged<String?> onChanged,
   }) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -199,7 +231,7 @@ class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
           style: GoogleFonts.montserrat(
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: Colors.black87,
+            color: theme.textTheme.bodyLarge?.color,
           ),
         ),
         const SizedBox(height: 8),
@@ -207,7 +239,7 @@ class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: Colors.grey[300]!,
+                color: theme.dividerColor,
                 width: 1,
               ),
             ),
@@ -215,28 +247,29 @@ class _FlightPreferencesScreenState extends State<FlightPreferencesScreen> {
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: value,
+              dropdownColor: theme.canvasColor,
               hint: Text(
                 hintText,
                 style: GoogleFonts.montserrat(
                   fontSize: 16,
                   fontWeight: FontWeight.w400,
-                  color: Colors.grey[400],
+                  color: theme.hintColor,
                 ),
               ),
               isExpanded: true,
-              icon: const Icon(
+              icon: Icon(
                 Icons.keyboard_arrow_down,
-                color: Colors.black87,
+                color: theme.iconTheme.color,
               ),
               items: items.map((String item) {
                 return DropdownMenuItem<String>(
                   value: item,
                   child: Text(
-                    item,
+                    displayMap[item] ?? item,
                     style: GoogleFonts.montserrat(
                       fontSize: 16,
                       fontWeight: FontWeight.w400,
-                      color: Colors.black87,
+                      color: theme.textTheme.bodyLarge?.color,
                     ),
                   ),
                 );

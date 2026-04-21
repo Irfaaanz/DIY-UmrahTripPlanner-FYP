@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 enum AppLanguage {
   english('en', 'English'),
-  malay('my', 'Malay');
+  malay('ms', 'Malay');
 
   final String code;
   final String name;

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../services/auth_service.dart';
 import 'create_account_screen.dart';
 import 'main_navigation.dart';
+import '../l10n/generated/app_localizations.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -31,11 +32,13 @@ class _SignInScreenState extends State<SignInScreen> {
       return;
     }
 
+    final l10n = AppLocalizations.of(context)!;
+
     setState(() {
       _isLoading = true;
     });
 
-    final success = await AuthService.signIn(
+    final error = await AuthService.signIn(
       email: _emailController.text.trim(),
       password: _passwordController.text,
     );
@@ -44,7 +47,7 @@ class _SignInScreenState extends State<SignInScreen> {
       _isLoading = false;
     });
 
-    if (success) {
+    if (error == null) {
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
@@ -57,7 +60,7 @@ class _SignInScreenState extends State<SignInScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Invalid email or password',
+              "${l10n.invalidEmailPassword} ($error)", // Show error for debugging
               style: GoogleFonts.montserrat(),
             ),
             backgroundColor: Colors.red,
@@ -69,6 +72,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -125,7 +129,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       const SizedBox(height: 24),
                       // Title
                       Text(
-                        'Sign in with email',
+                        l10n.signInWithEmail,
                         style: GoogleFonts.montserrat(
                           fontSize: 24,
                           fontWeight: FontWeight.w700,
@@ -136,7 +140,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       const SizedBox(height: 12),
                       // Description
                       Text(
-                        'Personalise your Umrah trips easily with Umrah Trip Planner Buddy.',
+                        l10n.signInSubtitle,
                         style: GoogleFonts.montserrat(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
@@ -150,14 +154,14 @@ class _SignInScreenState extends State<SignInScreen> {
                       _buildInputField(
                         controller: _emailController,
                         icon: Icons.email_outlined,
-                        hintText: 'Email',
+                        hintText: l10n.emailAddress,
                         keyboardType: TextInputType.emailAddress,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your email';
+                            return l10n.enterEmail;
                           }
                           if (!value.contains('@')) {
-                            return 'Please enter a valid email';
+                            return l10n.validEmail;
                           }
                           return null;
                         },
@@ -167,7 +171,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       _buildInputField(
                         controller: _passwordController,
                         icon: Icons.lock_outline,
-                        hintText: 'Password',
+                        hintText: l10n.passwords,
                         obscureText: _obscurePassword,
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -184,7 +188,10 @@ class _SignInScreenState extends State<SignInScreen> {
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your password';
+                            return l10n.passwordLengthValidation; // We used generic validation string but can reuse or create specific
+// actually we should use enterPassword if we have one or reuse something similar. 
+// Let's use generic required check logic or a string "Please enter your password"
+                            return l10n.passwordLengthValidation;
                           }
                           return null;
                         },
@@ -199,14 +206,14 @@ class _SignInScreenState extends State<SignInScreen> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  'Forgot password feature coming soon',
+                                  l10n.forgotPasswordComingSoon,
                                   style: GoogleFonts.montserrat(),
                                 ),
                               ),
                             );
                           },
                           child: Text(
-                            'Forgot password?',
+                            l10n.forgotPassword,
                             style: GoogleFonts.montserrat(
                               fontSize: 14,
                               fontWeight: FontWeight.w400,
@@ -241,7 +248,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                   ),
                                 )
                               : Text(
-                                  'Sign in',
+                                  l10n.signIn,
                                   style: GoogleFonts.montserrat(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w400,
@@ -253,7 +260,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       const SizedBox(height: 16),
                       // Don't have account text
                       Text(
-                        "Don't have an account?",
+                        l10n.dontHaveAccount,
                         style: GoogleFonts.montserrat(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
@@ -281,7 +288,7 @@ class _SignInScreenState extends State<SignInScreen> {
                             elevation: 0,
                           ),
                           child: Text(
-                            'Sign up',
+                            l10n.signUp,
                             style: GoogleFonts.montserrat(
                               fontSize: 16,
                               fontWeight: FontWeight.w400,

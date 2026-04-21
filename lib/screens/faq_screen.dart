@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../l10n/generated/app_localizations.dart';
 
 class FAQScreen extends StatefulWidget {
   const FAQScreen({super.key});
@@ -62,17 +63,24 @@ class _FAQScreenState extends State<FAQScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    
+    // NOTE: For full l10n of FAQs, we would need to restructure the data source.
+    // Given the constraints and the provided ARB updates, I'm only localizing the titles/UI shell here.
+    // The FAQ content itself is currently hardcoded in the map above.
+    
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.only(left: 8.0),
           child: IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.arrow_back_ios,
-              color: Colors.black,
+              color: theme.iconTheme.color,
               size: 20,
             ),
             onPressed: () {
@@ -82,11 +90,11 @@ class _FAQScreenState extends State<FAQScreen> {
         ),
         centerTitle: true,
         title: Text(
-          'Frequently Asked Questions',
+          l10n.faqTitle,
           style: GoogleFonts.montserrat(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: Colors.black,
+            color: theme.textTheme.titleLarge?.color,
           ),
         ),
         actions: [
@@ -98,19 +106,19 @@ class _FAQScreenState extends State<FAQScreen> {
                 height: 40,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white,
+                  color: theme.cardColor,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.2),
+                      color: Colors.grey.withOpacity(0.1),
                       spreadRadius: 1,
                       blurRadius: 6,
                       offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.help_outline,
-                  color: Colors.black,
+                  color: theme.iconTheme.color,
                   size: 20,
                 ),
               ),
@@ -135,7 +143,7 @@ class _FAQScreenState extends State<FAQScreen> {
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black,
+                    color: theme.textTheme.titleLarge?.color,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -147,11 +155,11 @@ class _FAQScreenState extends State<FAQScreen> {
                   return Container(
                     margin: const EdgeInsets.only(bottom: 12),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: theme.cardColor,
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.2),
+                          color: Colors.grey.withOpacity(0.1),
                           spreadRadius: 1,
                           blurRadius: 6,
                           offset: const Offset(0, 2),
@@ -181,7 +189,7 @@ class _FAQScreenState extends State<FAQScreen> {
                                     style: GoogleFonts.poppins(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w500,
-                                      color: Colors.black87,
+                                      color: theme.textTheme.bodyLarge?.color,
                                     ),
                                   ),
                                 ),
@@ -189,7 +197,7 @@ class _FAQScreenState extends State<FAQScreen> {
                                   isExpanded
                                       ? Icons.keyboard_arrow_up
                                       : Icons.keyboard_arrow_down,
-                                  color: Colors.black87,
+                                  color: theme.iconTheme.color,
                                 ),
                               ],
                             ),
@@ -204,7 +212,7 @@ class _FAQScreenState extends State<FAQScreen> {
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w400,
-                                color: Colors.black87,
+                                color: theme.textTheme.bodyMedium?.color,
                                 height: 1.5,
                               ),
                             ),

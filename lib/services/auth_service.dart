@@ -1,117 +1,111 @@
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthService {
-  static const String _usersKey = 'registered_users';
-  static const String _currentUserKey = 'current_user';
-  static const String _isLoggedInKey = 'is_logged_in';
-
   // Register a new user
-  static Future<bool> registerUser({
+  static Future<String?> registerUser({
     required String displayName,
     required String email,
     required String password,
   }) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final usersJson = prefs.getStringList(_usersKey) ?? [];
+      final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
       
-      // Check if email already exists
-      for (final userJson in usersJson) {
-        final user = jsonDecode(userJson) as Map<String, dynamic>;
-        if (user['email'] == email) {
-          return false; // Email already exists
-        }
+      // Update display name
+      if (userCredential.user != null) {
+        await userCredential.user!.updateDisplayName(displayName);
+        await userCredential.user!.reload(); // Reload to update local user data
       }
-
-      // Create new user
-      final newUser = {
-        'displayName': displayName,
-        'email': email,
-        'password': password, // In production, hash this password
-        'createdAt': DateTime.now().toIso8601String(),
-      };
-
-      usersJson.add(jsonEncode(newUser));
-      await prefs.setStringList(_usersKey, usersJson);
       
-      return true;
+      return null;
+    } on FirebaseAuthException catch (e) {
+      return e.code;
     } catch (e) {
-      return false;
+      print('Registration Error: $e');
+      return 'unknown-error';
     }
   }
 
   // Sign in user
-  static Future<bool> signIn({
+  static Future<String?> signIn({
     required String email,
     required String password,
   }) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final usersJson = prefs.getStringList(_usersKey) ?? [];
-
-      // Find user with matching email and password
-      for (final userJson in usersJson) {
-        final user = jsonDecode(userJson) as Map<String, dynamic>;
-        if (user['email'] == email && user['password'] == password) {
-          // Save current user and login status
-          await prefs.setString(_currentUserKey, userJson);
-          await prefs.setBool(_isLoggedInKey, true);
-          return true;
-        }
-      }
-
-      return false; // Invalid credentials
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      return null;
+    } on FirebaseAuthException catch (e) {
+      return e.code;
     } catch (e) {
-      return false;
+      print('Sign In Error: $e');
+      return 'unknown-error';
     }
   }
 
   // Get current user
   static Future<Map<String, dynamic>?> getCurrentUser() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final isLoggedIn = prefs.getBool(_isLoggedInKey) ?? false;
-      
-      if (!isLoggedIn) {
-        return null;
-      }
-
-      final userJson = prefs.getString(_currentUserKey);
-      if (userJson != null) {
-        return jsonDecode(userJson) as Map<String, dynamic>;
-      }
-      
-      return null;
-    } catch (e) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
       return null;
     }
+
+    return {
+      'displayName': user.displayName ?? '',
+      'email': user.email ?? '',
+      'createdAt': user.metadata.creationTime?.toIso8601String() ?? '',
+      'uid': user.uid,
+    };
   }
 
   // Get display name
   static Future<String?> getDisplayName() async {
-    final user = await getCurrentUser();
-    return user?['displayName'] as String?;
+    final user = FirebaseAuth.instance.currentUser;
+    return user?.displayName;
   }
 
   // Check if user is logged in
   static Future<bool> isLoggedIn() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      return prefs.getBool(_isLoggedInKey) ?? false;
-    } catch (e) {
-      return false;
-    }
+    return FirebaseAuth.instance.currentUser != null;
   }
 
   // Sign out
   static Future<void> signOut() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_currentUserKey);
-      await prefs.setBool(_isLoggedInKey, false);
+      await FirebaseAuth.instance.signOut();
     } catch (e) {
-      // Handle error
+      print('Sign Out Error: $e');
+    }
+  }
+  // Update password
+  static Future<bool> updatePassword(String newPassword) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await user.updatePassword(newPassword);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print('Update Password Error: $e');
+      return false;
+    }
+  }
+
+  // Update display name
+  static Future<void> updateDisplayName(String displayName) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await user.updateDisplayName(displayName);
+        await user.reload();
+      }
+    } catch (e) {
+      print('Update Display Name Error: $e');
     }
   }
 }
