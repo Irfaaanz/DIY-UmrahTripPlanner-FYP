@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1013746791690",
+    "project_id": "diy-umrah-fyp",
+    "storage_bucket": "diy-umrah-fyp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1013746791690:android:6453b5ebbc8db96d0d36f3",
+        "android_client_info": {
+          "package_name": "com.example.diy_umrah_planner_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDASCV5UBUofaNm-PwMdzQbgntCTV1-nrI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

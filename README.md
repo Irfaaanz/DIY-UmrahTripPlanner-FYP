@@ -14,3 +14,30 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+# DIY Umrah Trip Planner using PSO
+
+Final Year Project (FYP)
+
+## Objective
+To optimize Umrah trip planning based on user budget and preferences using Particle Swarm Optimization.
+
+## Features
+- Budget-based itinerary generation
+- Cost optimization using PSO
+- Flutter mobile prototype (iOS platform)
+
+## Tech Stack
+- Flutter
+- Python (PSO)
+- GitHub
+
+## Live Demo Application
+- [Live Demo](https://diy-umrah-fyp.web.app/)
+
+## Apps credentials
+- Email: fan@gmail.com
+- Password: fanh1234
+
+## Documentation
+- [Documentation](https://drive.google.com/drive/folders/1oOyAPwqZ47Ta7amUhuUCjkT0j2brjcIt)
